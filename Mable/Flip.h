@@ -56,13 +56,17 @@ struct P2GG2P : Fluid{
             std::cout << "moveParticles" << std::endl;
             output(vertices);
             std::string OutputVTK = "outputVTK/output"+std::to_string(i)+".vtk";
-            std::ostringstream ssdat;
-            ssdat << "outputDAT/output" << std::setw(3) << std::setfill('0') << i << ".dat";
-            //std::string OutputDAT = "outputDAT/output"+std::to_string(i)+".dat";
-            std::string OutputDAT(ssdat.str());
+            std::ostringstream ssPressure;
+            ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << i << ".dat";
+            std::ostringstream ssMap;
+            ssMap << "outputMap/output" << std::setw(3) << std::setfill('0') << i << ".dat";
+            std::string OutputPressure(ssPressure.str());
+            std::string OutputMap(ssMap.str());
             std::cout << OutputVTK.c_str() << std::endl;
+            
             outputVTK(OutputVTK.c_str(),vertices);
-            outputPLT_P(Nx, Ny, dx, OutputDAT.c_str(), p);
+            outputPLT_P(Nx, Ny, dx, OutputPressure.c_str(), p);
+            outputPLT_M(Nx, Ny,OutputMap.c_str(), map);
         }
     }
     void output(std::vector<Eigen::Vector2d> &v){

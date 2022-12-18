@@ -15,4 +15,16 @@ void outputPLT_P(int nx,int ny,double dx,const char* OutputFileName,std::vector<
     }
     fclose(ofp);
 }
+void outputPLT_M(int nx,int ny,const char* OutputFileName,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
+    FILE *ofp = fopen(OutputFileName,"w");
+    for(int i=0;i<nx;i++)for(int j=0;j<ny;j++){
+        std::vector<int>key = {i,j};
+        if(map.find(key) == map.end()){
+            fprintf(ofp,"%d %d 0\n",i,j);
+            continue;
+        }
+        else fprintf(ofp,"%d %d %d\n",i,j,(int)map.at(key).size());
+    }
+    fclose(ofp);
+}
 #endif /* gnuplot_h */
