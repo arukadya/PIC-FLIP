@@ -152,7 +152,14 @@ struct Fluid{
         std::cout << "finGauss" << std::endl;
 //        print_velocity();
         for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
+            
+            
+//---------多分質量０のグリッドの速さは０である------------------------------------------------------------
             if(mi[i][j] < eps)u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
+            
+            
+            
+//--------------------------------------------------------------------------------------------------
             else u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/mi[i][j];
         }
         for(int i=0; i<Nx;i++)for(int j=1;j<Ny;j++){

@@ -123,6 +123,11 @@ struct P2GG2P : Fluid{
         return key;
     }
     void particlesVelocityToGrid(){
+//----------------速度も初期化した方がいい気がする----------------------------------------------------------
+//グリッドの切り方はよく考えるべき．スタッカート格子に則って，u,v別々にやるのが合ってる気がする．ブランチはきれ（戒め）
+        
+        
+        
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
             mi[i][j] = 0;
         }
@@ -175,13 +180,15 @@ struct P2GG2P : Fluid{
             }
         }
         project(map);
-        //std::cout << "pressure" << std::endl;
-        //print_pressure();
-        //std::cout << "velocity" << std::endl;
-        //print_velocity();
     }
     
     void gridVelocityToParticles(){
+//-----------------------これも速度を初期化した方がいい気がする-----------------------------------------------
+        
+        
+        
+        
+        
         //print_velocity();
         for(int i=0;i<particles.size();i++){
             //付近４グリッドの線形補完
