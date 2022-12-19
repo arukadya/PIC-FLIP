@@ -35,7 +35,7 @@ struct particle{
     }
 };
 
-struct P2GG2P : Fluid{
+struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
     std::vector<particle> particles;//入力メッシュの頂点
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>map;//ハッシュテーブル
@@ -73,7 +73,7 @@ struct P2GG2P : Fluid{
         v.resize(particles.size());
         for(int i=0;i<v.size();i++)v[i] = particles[i].position;
     }
-    P2GG2P(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>>&vertical_v,std::vector<std::vector<double>>&pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<Eigen::Vector2d>>&gridF):Fluid(x,t,density,horizontal_v,vertical_v,pressure,gridUM,gridVM,gridF){
+    PIC_FLIP(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>>&vertical_v,std::vector<std::vector<double>>&pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<Eigen::Vector2d>>&gridF):Fluid(x,t,density,horizontal_v,vertical_v,pressure,gridUM,gridVM,gridF){
         division = {Nx,Ny};
         initParticles();
     }
@@ -141,7 +141,15 @@ struct P2GG2P : Fluid{
         for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
             std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-            for(int k=0;k<2;k++){
+            if(i != 1){
+                gx_list.push_back({(i-2)*dx,(j+0.5)*dx});
+                key_list.push_back({i-2,j});
+            }
+            if(i != Nx){
+                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+                key_list.push_back({i+1,j});
+            }
+            for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
                     for(auto x:val){
@@ -159,7 +167,15 @@ struct P2GG2P : Fluid{
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-            for(int k=0;k<2;k++){
+            if(j != 1){
+                gx_list.push_back({(i+0.5)*dx,(j-2)*dx});
+                key_list.push_back({i,j-2});
+            }
+            if(j != Ny){
+                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+                key_list.push_back({i,j+1});
+            }
+            for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
                     for(auto x:val){
@@ -191,13 +207,22 @@ struct P2GG2P : Fluid{
         for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
             std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-            for(int k=0;k<2;k++){
+            if(i != 1){
+                gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
+                key_list.insert(key_list.begin(),{i-2,j});
+            }
+            if(i != Nx){
+                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+                key_list.push_back({i+1,j});
+            }
+            for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
                     for(auto x:val){
                         Eigen::Vector2d px = particles[x].position;
                         double weight = weightFunction(px, gx_list[k], dx);
-                        particles[x].velocity.x()+= weight*mp*u[i-1+k][j];
+                        if(i == 1)particles[x].velocity.x()+= weight*mp*u[i-1+k][j];
+                        else particles[x].velocity.x()+= weight*mp*u[i-2+k][j];
                     }
                 }
             }
@@ -205,13 +230,22 @@ struct P2GG2P : Fluid{
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-            for(int k=0;k<2;k++){
+            if(j != 1){
+                gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
+                key_list.insert(key_list.begin(),{i,j-2});
+            }
+            if(j != Ny){
+                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+                key_list.push_back({i,j+1});
+            }
+            for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
                     for(auto x:val){
                         Eigen::Vector2d px = particles[x].position;
                         double weight = weightFunction(px, gx_list[k], dx);
-                        particles[x].velocity.y()+= weight*mp*v[i][j-1+k];
+                        if(j == 1)particles[x].velocity.y()+= weight*mp*v[i][j-1+k];
+                        else particles[x].velocity.y()+= weight*mp*v[i][j-2+k];
                     }
                 }
             }
@@ -220,11 +254,11 @@ struct P2GG2P : Fluid{
     void moveParticles(){
         //std::cout << L << std::endl;
         for(int i=0;i<particles.size();i++){
-            std::cout <<"x0:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
+            //std::cout <<"x0:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
             particles[i].position.x() += particles[i].velocity.x()*dt;
             particles[i].position.y() += particles[i].velocity.y()*dt;
             pushout(particles[i].position, L,dx);
-            std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
+            //std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
         }
     }
 };

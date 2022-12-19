@@ -83,7 +83,6 @@ struct Fluid{
     double interpolation(int nx,int ny,double x,double y,std::vector<std::vector<double>>&q){
         double s = fmax(0.0,fmin(nx-1-1e-6,x/dx));
         double t = fmax(0.0,fmin(ny-1-1e-6,y/dx));
-    
         int i = s;
         int j = t;
         Eigen::Vector4d f = {q[i][j],q[i][j+1],q[i+1][j],q[i+1][j+1]};
@@ -106,7 +105,6 @@ struct Fluid{
         return ret;
     }
     void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
-        //128以上でオーバーフローする．
         double scale = dt/(rho*dx*dx);//左辺の係数部分
         double eps = 1.0e-4;//ガウスザイデル法の精度
         double err;//ガウスザイデル法の残差
@@ -154,8 +152,6 @@ struct Fluid{
         std::cout << "finGauss" << std::endl;
 //        print_velocity();
         for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
-            
-            
 //---------多分質量０のグリッドの速さは０である------------------------------------------------------------
             if(umi[i][j] < eps){
                 //u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
@@ -163,7 +159,6 @@ struct Fluid{
             }
             else u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/umi[i][j];
 //--------------------------------------------------------------------------------------------------
-            
         }
         for(int i=0; i<Nx;i++)for(int j=1;j<Ny;j++){
             

@@ -31,7 +31,7 @@ int main(int argc, const char * argv[]) {
 //    for(unsigned int i=0;i<Ny+1+Margin;i++)v[i]=(double *)malloc(sizeof(double)*Nx+Margin);
 //    for(unsigned int i=0;i<Ny+Margin;i++)p[i] =(double *)malloc(sizeof(double)*Nx+Margin);
 //
-    P2GG2P simulator = P2GG2P(dx,dt,rho,u,v,p,umi,vmi,fi);
+    PIC_FLIP simulator = PIC_FLIP(dx,dt,rho,u,v,p,umi,vmi,fi);
     //std::cout << "simulator initialized!\n";
     simulator.execute();
 //    for(unsigned int i=0;i<Ny+Margin;i++)free(u[i]);

@@ -76,9 +76,7 @@ struct Mable{
                                 s*(1-t) , s*t};
         return f.dot(c);
     }
-    
-    
-    
+
     void project(unsigned int Nx,unsigned int Ny){
         double scale = dt/(rho*dx*dx);//左辺の係数部分
         double eps = 1.0e-4;//ガウスザイデル法の精度
