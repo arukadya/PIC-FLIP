@@ -29,7 +29,11 @@ struct Fluid{
     double dt;//時間の刻み幅
     double rho;
     std::vector<std::vector<double>>u;//水平
+    //std::vector<std::vector<double>>old_u;//水平
     std::vector<std::vector<double>>v;//鉛直
+    //std::vector<std::vector<double>>old_v;//水平
+    std::vector<std::vector<double>>delta_u;//水平
+    std::vector<std::vector<double>>delta_v;//鉛直
     std::vector<std::vector<double>>p;//圧力
     std::vector<std::vector<double>>umi;//Gridの重さ
     std::vector<std::vector<double>>vmi;//Gridの重さ
@@ -42,7 +46,11 @@ struct Fluid{
         dt = t;
         rho = density;
         u = horizontal_v;//v[nx+1][ny]
+        //old_u = horizontal_v;
+        delta_u = horizontal_v;
         v = vertical_v;//v[nx][ny+1]
+        //old_v = vertical_v;
+        delta_v = vertical_v;
         p = pressure;//p[nx][ny]
         umi = gridUM;
         vmi = gridVM;
@@ -52,45 +60,6 @@ struct Fluid{
         std::cout << "initpressure" << std::endl;
         initForce();
         std::cout << "initforce" << std::endl;
-    }
-    void advect(){
-        std::vector<std::vector<double>>old_u = u;
-        std::vector<std::vector<double>>old_v = v;
-        //水平成分
-        for(int i=1;i<Nx;i++)for(int j=0;j<Ny;j++){
-            //MAC格子座標でのサンプリング点の計算。MACグリッドの速度成分は、水平成分が(0.0,0.5)鉛直成分が(0.5,0.0)に設定してある。
-            double x = i*dx;
-            double y = (j + 0.5)*dx;
-            //サンプリング点の移流
-            double newx = x - dt*interpolation(Nx+1, Ny, x,y-0.5*dx, old_u);
-            double newy = y - dt*interpolation(Nx, Ny+1, x-0.5*dx,y, old_v);
-            
-            u[i][j] = interpolation(Nx+1, Ny, newx, newy-0.5*dx, old_u);
-        }
-        for(int i=0;i<Nx;i++)for(int j=1;j<Ny;j++){
-            //MAC格子座標でのサンプリング点の計算。MACグリッドの速度成分は、水平成分が(0.0,0.5)鉛直成分が(0.5,0.0)に設定してある。
-            double x = (i+0.5)*dx;
-            double y = j*dx;
-            //サンプリング点の移流
-            double newx = x - dt*interpolation(Nx+1, Ny, x-0.5*dx,y, old_u);
-            double newy = y - dt*interpolation(Nx, Ny+1, x,y-0.5*dx, old_v);
-            
-            v[i][j] = interpolation(Nx, Ny+1, newx-0.5*dx, newy, old_v);
-        }
-    }
-    //point=計算する点の座標
-    //q=補完する離散値の二次元配列
-    double interpolation(int nx,int ny,double x,double y,std::vector<std::vector<double>>&q){
-        double s = fmax(0.0,fmin(nx-1-1e-6,x/dx));
-        double t = fmax(0.0,fmin(ny-1-1e-6,y/dx));
-        int i = s;
-        int j = t;
-        Eigen::Vector4d f = {q[i][j],q[i][j+1],q[i+1][j],q[i+1][j+1]};
-        s -= i;
-        t -= j;
-        Eigen::Vector4d c = { (1-s)*(1-t) , (1-s)*t ,
-                                s*(1-t) , s*t};
-        return f.dot(c);
     }
     std::vector<int>BoundaryCondition(int i,int j,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
         std::vector<int>ret(4,1);
@@ -156,17 +125,24 @@ struct Fluid{
             if(umi[i][j] < eps){
                 //u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
                 u[i][j] = 0;
+                delta_u[i][j] = -u[i][j];
             }
-            else u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/umi[i][j];
+            else {
+                u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/umi[i][j];
+                delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/umi[i][j];
+            }
 //--------------------------------------------------------------------------------------------------
         }
         for(int i=0; i<Nx;i++)for(int j=1;j<Ny;j++){
-            
             if(vmi[i][j] < eps){
 //                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
                 v[i][j] = 0;
+                delta_v[i][j] = -v[i][j];
             }
-            else v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx + dt*fi[i][j].y()/vmi[i][j];
+            else {
+                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx + dt*fi[i][j].y()/vmi[i][j];
+                delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx + dt*fi[i][j].y()/vmi[i][j];
+            }
         }
     }
     void print_pressure(){
@@ -197,9 +173,9 @@ struct Fluid{
     void initForce(){
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
             Eigen::Vector2d f0 = {0.0,-g0*dx};
-            Eigen::Vector2d f1 = {0.0,-g0*dx/6};
+            Eigen::Vector2d f1 = {0.0,0.0};
             //std::cout << f0.x() << "," << f0.y() << std::endl;
-            if(i>Nx/3 && i < Nx/3*2)fi[i][j] = f0;
+            if(i == 0 || i == Nx-1 || j == 0 || j == Ny-1)fi[i][j] = f1;
             else fi[i][j] = f0;
         }
     }

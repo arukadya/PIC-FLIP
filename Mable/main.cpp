@@ -4,7 +4,7 @@
 #define Margin 0
 int main(int argc, const char * argv[]) {
     double dx = 0.01;//セルの大きさ
-    double dt = 0.1;//時間の刻み幅
+    double dt = 0.15;//時間の刻み幅
     double rho = 1.0;
 //    double **u;
 //    double **v;
