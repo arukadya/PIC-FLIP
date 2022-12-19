@@ -73,13 +73,13 @@ struct P2GG2P : Fluid{
         v.resize(particles.size());
         for(int i=0;i<v.size();i++)v[i] = particles[i].position;
     }
-    P2GG2P(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>>&vertical_v,std::vector<std::vector<double>>&pressure,std::vector<std::vector<double>>&gridM,std::vector<std::vector<Eigen::Vector2d>>&gridF):Fluid(x,t,density,horizontal_v,vertical_v,pressure,gridM,gridF){
+    P2GG2P(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>>&vertical_v,std::vector<std::vector<double>>&pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<Eigen::Vector2d>>&gridF):Fluid(x,t,density,horizontal_v,vertical_v,pressure,gridUM,gridVM,gridF){
         division = {Nx,Ny};
         initParticles();
     }
     
     void initParticles(){
-        std::cout << "initparticles" << std::endl;
+        //std::cout << "initparticles" << std::endl;
         for(unsigned int i=Nx/2;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
             Eigen::Vector2d v0 = {0.0,0};
             std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
@@ -125,53 +125,56 @@ struct P2GG2P : Fluid{
     void particlesVelocityToGrid(){
 //----------------速度も初期化した方がいい気がする----------------------------------------------------------
 //グリッドの切り方はよく考えるべき．スタッカート格子に則って，u,v別々にやるのが合ってる気がする．ブランチはきれ（戒め）
-        
-        
-        
-        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-            mi[i][j] = 0;
-        }
-        for(const auto &[key,val] : map){
-            if(key[0] < 0 || key[0] >=Nx || key[1] < 0 || key[1] >=Ny){
-                std::cout << "outside map!!" << std::endl;
-                std::cout << key[0] << " " << key[1] << std::endl;
-//                for(auto &x:val){
-//                    std::cout << "particle" << x << "(" << particles[x].position.x() << "," << particles[x].position.y() << ")" << std::endl;
-//                }
-                continue;
-            }
-            double gridU=0.0;
-            double gridV=0.0;
-            Eigen::Vector2d gridPos = {(key[0]+0.5)*dx,(key[1]+0.5)*dx};
-            //std::cout << gridPos << std::endl;
-            /*for(auto &x:val){
-                //ただ平均とるだけ
-                gridU += particles[x].velocity.x();
-                gridV += particles[x].velocity.y();
-            }
-             u[key[0]][key[1]] = gridU/val.size();
-             v[key[0]][key[1]] = gridV/val.size();
-             */
 //-----------------------------------------------------------------------------------------------
             //P2Gの方法は諸説あり。
-            double sum_mp = 0;
-            for(auto &x:val){
-                particles[x].setGridIndex(key[0], key[1]);
-                weights[x] = weightFunction(particles[x].position, gridPos, dx);
-                //std::cout << particles[x].position << std::endl;
-                //std::cout << weights[x] << std::endl;
-                gridU += weights[x]*particles[x].velocity.x()*mp;
-                gridV += weights[x]*particles[x].velocity.y()*mp;
-                sum_mp += weights[x]*mp;
-            }
-            u[key[0]][key[1]] = gridU;
-            v[key[0]][key[1]] = gridV;
-            mi[key[0]][key[1]] = sum_mp;
-            //std::cout << u[key[0]][key[1]] << " " << v[key[0]][key[1]] << std::endl;
 //-----------------------------------------------------------------------------------------------
+        //初期化
+        for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
+            umi[i][j] = 0;
+            u[i][j] = 0;
         }
-        //print_velocity();
+        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny+1;j++){
+            vmi[i][j] = 0;
+            v[i][j] = 0;
+        }
+        //u
+        for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
+            std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
+            std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
+            for(int k=0;k<2;k++){
+                if(map.find(key_list[k]) != map.end()){
+                    auto val = map.at(key_list[k]);
+                    for(auto x:val){
+                        Eigen::Vector2d px = particles[x].position;
+                        Eigen::Vector2d pv = particles[x].velocity;
+                        double weight = weightFunction(px, gx_list[k], dx);
+                        umi[i][j] += weight*mp;
+                        u[i][j] += weight*mp*pv.x();
+                    }
+                    u[i][j] /= umi[i][j];
+                }
+            }
+        }
+        //v
+        for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
+            std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
+            std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
+            for(int k=0;k<2;k++){
+                if(map.find(key_list[k]) != map.end()){
+                    auto val = map.at(key_list[k]);
+                    for(auto x:val){
+                        Eigen::Vector2d px = particles[x].position;
+                        Eigen::Vector2d pv = particles[x].velocity;
+                        double weight = weightFunction(px, gx_list[k], dx);
+                        vmi[i][j] += weight*mp;
+                        v[i][j] += weight*mp*pv.y();
+                    }
+                    v[i][j] /= vmi[i][j];
+                }
+            }
+        }
     }
+    
     void calGridPressure(){
         for(int i=0;i<Nx;i++)for(int j=0;j<Ny;j++){
             std::vector<int>key = {i,j};
@@ -184,28 +187,44 @@ struct P2GG2P : Fluid{
     
     void gridVelocityToParticles(){
 //-----------------------これも速度を初期化した方がいい気がする-----------------------------------------------
-        
-        
-        
-        
-        
-        //print_velocity();
-        for(int i=0;i<particles.size();i++){
-            //付近４グリッドの線形補完
-//            particles[i].velocity.x() = interpolation(Nx+1, Ny, particles[i].position.x(), particles[i].position.y(), u);
-//            particles[i].velocity.y() = interpolation(Nx, Ny+1, particles[i].position.x(), particles[i].position.y(), v);
-            //重みを使った逆算
-            particles[i].velocity.x() = weights[i]*u[particles[i].gridIndex.first][particles[i].gridIndex.second];
-            particles[i].velocity.y() = weights[i]*v[particles[i].gridIndex.first][particles[i].gridIndex.second];
+        for(auto &x:particles)x.velocity = {0,0};
+        for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
+            std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
+            std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
+            for(int k=0;k<2;k++){
+                if(map.find(key_list[k]) != map.end()){
+                    auto val = map.at(key_list[k]);
+                    for(auto x:val){
+                        Eigen::Vector2d px = particles[x].position;
+                        double weight = weightFunction(px, gx_list[k], dx);
+                        particles[x].velocity.x()+= weight*mp*u[i-1+k][j];
+                    }
+                }
+            }
+        }
+        for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
+            std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
+            std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
+            for(int k=0;k<2;k++){
+                if(map.find(key_list[k]) != map.end()){
+                    auto val = map.at(key_list[k]);
+                    for(auto x:val){
+                        Eigen::Vector2d px = particles[x].position;
+                        double weight = weightFunction(px, gx_list[k], dx);
+                        particles[x].velocity.y()+= weight*mp*v[i][j-1+k];
+                    }
+                }
+            }
         }
     }
     void moveParticles(){
         //std::cout << L << std::endl;
         for(int i=0;i<particles.size();i++){
+            std::cout <<"x0:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
             particles[i].position.x() += particles[i].velocity.x()*dt;
             particles[i].position.y() += particles[i].velocity.y()*dt;
             pushout(particles[i].position, L,dx);
-            //std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
+            std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
         }
     }
 };

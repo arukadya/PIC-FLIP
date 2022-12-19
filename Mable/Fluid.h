@@ -31,19 +31,21 @@ struct Fluid{
     std::vector<std::vector<double>>u;//水平
     std::vector<std::vector<double>>v;//鉛直
     std::vector<std::vector<double>>p;//圧力
-    std::vector<std::vector<double>>mi;//Gridの重さ
+    std::vector<std::vector<double>>umi;//Gridの重さ
+    std::vector<std::vector<double>>vmi;//Gridの重さ
     std::vector<std::vector<Eigen::Vector2d>>fi;//Gridに加わる外力
     std::vector<double> weights;//粒子の重み
     double L;
     
-    Fluid(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>> &vertical_v,std::vector<std::vector<double>> &pressure,std::vector<std::vector<double>>&gridM,std::vector<std::vector<Eigen::Vector2d>>&gridF){
+    Fluid(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>> &vertical_v,std::vector<std::vector<double>> &pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<Eigen::Vector2d>>&gridF){
         dx = x;
         dt = t;
         rho = density;
         u = horizontal_v;//v[nx+1][ny]
         v = vertical_v;//v[nx][ny+1]
         p = pressure;//p[nx][ny]
-        mi = gridM;
+        umi = gridUM;
+        vmi = gridVM;
         fi = gridF;
         L = dx*Nx;
         initPressure();
@@ -155,19 +157,22 @@ struct Fluid{
             
             
 //---------多分質量０のグリッドの速さは０である------------------------------------------------------------
-            if(mi[i][j] < eps)u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
-            
-            
-            
+            if(umi[i][j] < eps){
+                //u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
+                u[i][j] = 0;
+            }
+            else u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/umi[i][j];
 //--------------------------------------------------------------------------------------------------
-            else u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/mi[i][j];
+            
         }
         for(int i=0; i<Nx;i++)for(int j=1;j<Ny;j++){
-            if(mi[i][j] < eps)v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
-            else v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx + dt*fi[i][j].y()/mi[i][j];
+            
+            if(vmi[i][j] < eps){
+//                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
+                v[i][j] = 0;
+            }
+            else v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx + dt*fi[i][j].y()/vmi[i][j];
         }
-//        std::cout << "outputP" << std::endl;
-//        print_pressure();
     }
     void print_pressure(){
         for(int i=0;i<Nx;i++){
