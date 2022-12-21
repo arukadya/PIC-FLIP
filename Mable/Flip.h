@@ -17,7 +17,7 @@
 #include "gnuplot.h"
 #include "functions.h"
 #define repeatCount 100
-#define alpha 0
+#define alpha 0.5
 #define mp 1 //粒子の重さ
 #ifndef Flip_h
 #define Flip_h
@@ -140,15 +140,15 @@ struct PIC_FLIP : Fluid{
         //初期化
         for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
             umi[i][j] = 0;
-            //old_u[i][j] = u[i][j];
+            old_u[i][j] = u[i][j];
             u[i][j] = 0;
-            delta_u[i][j] = 0;
+            //delta_u[i][j] = 0;
         }
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny+1;j++){
             vmi[i][j] = 0;
-            //old_v[i][j] = v[i][j];
+            old_v[i][j] = v[i][j];
             v[i][j] = 0;
-            delta_v[i][j] = 0;
+            //delta_v[i][j] = 0;
         }
         //u
         for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
@@ -291,8 +291,10 @@ struct PIC_FLIP : Fluid{
                     for(auto x:val){
                         Eigen::Vector2d px = particles[x].position;
                         double weight = weightFunction(px, gx_list[k], dx);
-                        if(i == 1)particles[x].FLIP_velocity.x()+= weight*mp*delta_u[i-1+k][j];
-                        else particles[x].FLIP_velocity.x()+= weight*mp*delta_u[i-2+k][j];
+//                        if(i == 1)particles[x].FLIP_velocity.x()+= weight*mp*delta_u[i-1+k][j];
+//                        else particles[x].FLIP_velocity.x()+= weight*mp*delta_u[i-2+k][j];
+                        if(i == 1)particles[x].FLIP_velocity.x()+= weight*mp*(u[i-1+k][j]-old_u[i-1+k][j]);
+                        else particles[x].FLIP_velocity.x()+= weight*mp*(u[i-2+k][j]-old_u[i-2+k][j]);
                     }
                 }
             }
@@ -314,8 +316,10 @@ struct PIC_FLIP : Fluid{
                     for(auto x:val){
                         Eigen::Vector2d px = particles[x].position;
                         double weight = weightFunction(px, gx_list[k], dx);
-                        if(j == 1)particles[x].FLIP_velocity.y()+= weight*mp*delta_v[i][j-1+k];
-                        else particles[x].FLIP_velocity.y()+= weight*mp*delta_v[i][j-2+k];
+//                        if(j == 1)particles[x].FLIP_velocity.y()+= weight*mp*delta_v[i][j-1+k];
+//                        else particles[x].FLIP_velocity.y()+= weight*mp*delta_v[i][j-2+k];
+                        if(j == 1)particles[x].FLIP_velocity.y()+= weight*mp*(v[i][j-1+k]-old_v[i][j-1+k]);
+                        else particles[x].FLIP_velocity.y()+= weight*mp*(v[i][j-2+k]-old_v[i][j-2+k]);
                     }
                 }
             }

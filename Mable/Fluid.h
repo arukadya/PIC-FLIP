@@ -29,11 +29,11 @@ struct Fluid{
     double dt;//時間の刻み幅
     double rho;
     std::vector<std::vector<double>>u;//水平
-    //std::vector<std::vector<double>>old_u;//水平
+    std::vector<std::vector<double>>old_u;//水平
     std::vector<std::vector<double>>v;//鉛直
-    //std::vector<std::vector<double>>old_v;//水平
-    std::vector<std::vector<double>>delta_u;//水平
-    std::vector<std::vector<double>>delta_v;//鉛直
+    std::vector<std::vector<double>>old_v;//水平
+    //std::vector<std::vector<double>>delta_u;//水平
+    //std::vector<std::vector<double>>delta_v;//鉛直
     std::vector<std::vector<double>>p;//圧力
     std::vector<std::vector<double>>umi;//Gridの重さ
     std::vector<std::vector<double>>vmi;//Gridの重さ
@@ -48,11 +48,11 @@ struct Fluid{
         dt = t;
         rho = density;
         u = horizontal_v;//v[nx+1][ny]
-        //old_u = horizontal_v;
-        delta_u = horizontal_v;
+        old_u = horizontal_v;
+        //delta_u = horizontal_v;
         v = vertical_v;//v[nx][ny+1]
-        //old_v = vertical_v;
-        delta_v = vertical_v;
+        old_v = vertical_v;
+        //delta_v = vertical_v;
         p = pressure;//p[nx][ny]
         umi = gridUM;
         vmi = gridVM;
@@ -64,7 +64,7 @@ struct Fluid{
         initForce();
         std::cout << "initforce" << std::endl;
     }
-    std::vector<int>BoundaryCondition(int i,int j,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
+    std::vector<int>DirichletBoundaryCondition(int i,int j,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
         std::vector<int>ret(4,1);
         if(i == 0)ret[2] = 0;
         else if(map.find({i-1,j}) == map.end())ret[2] = 0;
@@ -94,7 +94,7 @@ struct Fluid{
                 //std::cout << i << "," << j << std::endl;
                 double D[4] = {1.0,1.0,-1.0,-1.0};//周囲4方向に向かって働く、圧力の向き
                 //double F[4] = {(double)(i<Nx-1),(double)(j<Ny-1),(double)(i>0),(double)(j>0)};//境界条件。壁なら0,流体なら1
-                std::vector<int> F = BoundaryCondition(i,j,map);
+                std::vector<int> F = DirichletBoundaryCondition(i,j,map);
                 double P[4] = {//pn。周囲4つのセルの圧力値
                     (F[0] ? p[i+1][j] : 0.0),
                     (F[1] ? p[i][j+1] : 0.0),
@@ -130,7 +130,7 @@ struct Fluid{
 //        print_velocity();
         for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
             u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
-            delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
+            //delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
 //---------多分質量０のグリッドの速さは０である------------------------------------------------------------
 //            if(umi[i][j] < eps){
 //                //u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
@@ -147,7 +147,7 @@ struct Fluid{
         }
         for(int i=0; i<Nx;i++)for(int j=1;j<Ny;j++){
             v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
-            delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
+            //delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
 //            if(vmi[i][j] < eps){
 //               v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
 //                v[i][j] = 0;
