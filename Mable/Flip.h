@@ -51,6 +51,7 @@ struct PIC_FLIP : Fluid{
         for(unsigned int i=0;i<repeatCount;i++){
             std::cout << i << std::endl;
             locateParticlesOnGrid(map);
+            //preprocessingParticles();
             std::cout << "mapsize = " << map.size() << std::endl;
             particlesVelocityToGrid();
             std::cout << "P2G" << std::endl;
@@ -59,8 +60,8 @@ struct PIC_FLIP : Fluid{
             PICgridVelocityToParticles();
             FLIP_gridVelocityToParticles();
             std::cout << "G2P" << std::endl;
-            moveParticles();
-            std::cout << "moveParticles" << std::endl;
+            advectParticles();
+            std::cout << "advectParticles" << std::endl;
             output(vertices);
             std::string OutputVTK = "outputVTK/output"+std::to_string(i)+".vtk";
             std::ostringstream ssPressure;
@@ -80,7 +81,7 @@ struct PIC_FLIP : Fluid{
         v.resize(particles.size());
         for(int i=0;i<v.size();i++)v[i] = particles[i].position;
     }
-    PIC_FLIP(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>>&vertical_v,std::vector<std::vector<double>>&pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<Eigen::Vector2d>>&gridF):Fluid(x,t,density,horizontal_v,vertical_v,pressure,gridUM,gridVM,gridF){
+    PIC_FLIP(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>>&vertical_v,std::vector<std::vector<double>>&pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<double>>&gridUF,std::vector<std::vector<double>>&gridVF):Fluid(x,t,density,horizontal_v,vertical_v,pressure,gridUM,gridVM,gridUF,gridVF){
         division = {Nx,Ny};
         initParticles();
     }
@@ -88,7 +89,7 @@ struct PIC_FLIP : Fluid{
     void initParticles(){
         //std::cout << "initparticles" << std::endl;
 //        for(unsigned int i=Nx/2;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=Ny/10;j<Ny/10*6;j++){
+        for(unsigned int i=Nx/3;i<Nx/3*2;i++)for(unsigned int j=0;j<Ny;j++){
             Eigen::Vector2d v0 = {0.0,0};
             std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
             pos[0] = Eigen::Vector2d{(i+0.25)*dx,(j+0.25)*dx};
@@ -173,8 +174,11 @@ struct PIC_FLIP : Fluid{
                     }
                     u[i][j] /= umi[i][j];
                 }
+                //else std::cout << key_list[k][0] << "," << key_list[k][1] << ":OutsideMap" << std::endl;
+                u[i][j] += ufi[i][j] * dt;
             }
         }
+        std::cout << u[Nx/2][0]/dx << "," <<u[Nx/2][1]/dx<< std::endl;
         //v
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
@@ -200,6 +204,7 @@ struct PIC_FLIP : Fluid{
                     v[i][j] /= vmi[i][j];
                 }
             }
+            v[i][j] += vfi[i][j] * dt;
         }
     }
     
@@ -316,7 +321,7 @@ struct PIC_FLIP : Fluid{
             }
         }
     }
-    void moveParticles(){
+    void advectParticles(){
         //std::cout << L << std::endl;
         for(int i=0;i<particles.size();i++){
             //std::cout <<"x0:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
@@ -327,5 +332,16 @@ struct PIC_FLIP : Fluid{
             //std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
         }
     }
+//    void preprocessingParticles(){
+//        locateParticlesOnGrid(map);
+//        for(int i=0;i<particles.size();i++){
+//            int keyx = particles[i].gridIndex.first;
+//            int keyy = particles[i].gridIndex.second;
+//            particles[i].velocity.x() += ufi[keyx][keyy]*dt;
+//            particles[i].velocity.y() += vfi[keyx][keyy]*dt;
+//            //pushout(particles[i].position, L,dx);
+//        }
+//        //locateParticlesOnGrid(map);
+//    }
 };
 #endif /* Flip_h */

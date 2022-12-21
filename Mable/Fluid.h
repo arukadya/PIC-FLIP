@@ -37,11 +37,13 @@ struct Fluid{
     std::vector<std::vector<double>>p;//圧力
     std::vector<std::vector<double>>umi;//Gridの重さ
     std::vector<std::vector<double>>vmi;//Gridの重さ
-    std::vector<std::vector<Eigen::Vector2d>>fi;//Gridに加わる外力
+    //std::vector<std::vector<Eigen::Vector2d>>fi;//Gridに加わる外力
+    std::vector<std::vector<double>>ufi;//Gridに加わる外力
+    std::vector<std::vector<double>>vfi;//Gridに加わる外力
     std::vector<double> weights;//粒子の重み
     double L;
     
-    Fluid(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>> &vertical_v,std::vector<std::vector<double>> &pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<Eigen::Vector2d>>&gridF){
+    Fluid(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>> &vertical_v,std::vector<std::vector<double>> &pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<double>>&gridUF,std::vector<std::vector<double>>&gridVF){
         dx = x;
         dt = t;
         rho = density;
@@ -54,7 +56,8 @@ struct Fluid{
         p = pressure;//p[nx][ny]
         umi = gridUM;
         vmi = gridVM;
-        fi = gridF;
+        ufi = gridUF;
+        vfi = gridVF;
         L = dx*Nx;
         initPressure();
         std::cout << "initpressure" << std::endl;
@@ -84,7 +87,10 @@ struct Fluid{
         //圧力場を求める
             for(int j=0;j<Ny;j++)for(int i=0;i<Nx;i++){
                 std::vector<int>key = {i,j};
-                if(map.find(key) == map.end())continue;
+                if(map.find(key) == map.end()){
+                    p[i][j] = 0;
+                    continue;
+                }
                 //std::cout << i << "," << j << std::endl;
                 double D[4] = {1.0,1.0,-1.0,-1.0};//周囲4方向に向かって働く、圧力の向き
                 //double F[4] = {(double)(i<Nx-1),(double)(j<Ny-1),(double)(i>0),(double)(j>0)};//境界条件。壁なら0,流体なら1
@@ -95,6 +101,7 @@ struct Fluid{
                     (F[2] ? p[i-1][j] : 0.0),
                     (F[3] ? p[i][j-1] : 0.0)};
                 
+                F = {i<Nx-1,j<Ny-1,i>0,j>0};
                 //std::cout << P[0] << " " << P[1] << " " << P[2] << " " << P[3] << std::endl;
                 //std::cout << i << "," << j << std::endl;
                 //std::cout << i << "," << j << std::endl;
@@ -107,7 +114,8 @@ struct Fluid{
                 for(int n=0;n<4;n++){
                     sumF += F[n];
                     det += F[n]*scale;
-                    sum_L += F[n]*P[n]*scale;
+                    //sum_L += F[n]*P[n]*scale;
+                    sum_L += P[n]*scale;
                     sum_R += F[n]*D[n]*U[n]/dx;
                 }
                 //std::cout << "det:" << det << " sum_L:" << sum_L << " sum_R:" << sum_R << std::endl;
@@ -118,31 +126,39 @@ struct Fluid{
             }
         }while(eps<err);//反復回数は初期値と収束速度？に依存。定数回なら全体で計算量はO(n)
         //新しい流速を求める。u(t+1) = u* - (dt/rho)grad(p)
-        std::cout << "finGauss" << std::endl;
+        //std::cout << "finGauss" << std::endl;
 //        print_velocity();
         for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
+            u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
+            delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
 //---------多分質量０のグリッドの速さは０である------------------------------------------------------------
-            if(umi[i][j] < eps){
-                //u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
-                u[i][j] = 0;
-                delta_u[i][j] = -u[i][j];
-            }
-            else {
-                u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/umi[i][j];
-                delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx + dt*fi[i][j].x()/umi[i][j];
-            }
+//            if(umi[i][j] < eps){
+//                //u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
+//                u[i][j] = 0;
+//                delta_u[i][j] = -u[i][j];
+//            }
+//            else{
+//               u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*ufi[i][j]/umi[i][j];
+//                delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx + dt*ufi[i][j]/umi[i][j];
+//                u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
+//                delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
+//            }
 //--------------------------------------------------------------------------------------------------
         }
         for(int i=0; i<Nx;i++)for(int j=1;j<Ny;j++){
-            if(vmi[i][j] < eps){
+            v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
+            delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
+//            if(vmi[i][j] < eps){
+//               v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
+//                v[i][j] = 0;
+//                delta_v[i][j] = -v[i][j];
+//            }
+//            else {
+//                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx + dt*vfi[i][j]/vmi[i][j];
+//                delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx + dt*vfi[i][j]/vmi[i][j];
 //                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
-                v[i][j] = 0;
-                delta_v[i][j] = -v[i][j];
-            }
-            else {
-                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx + dt*fi[i][j].y()/vmi[i][j];
-                delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx + dt*fi[i][j].y()/vmi[i][j];
-            }
+//                delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
+//            }
         }
     }
     void print_pressure(){
@@ -165,18 +181,24 @@ struct Fluid{
     }
     void initPressure(){
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-            if(i < Nx/2)p[i][j] = 0;
+            if(i > Nx/2)p[i][j] = 0;
             //else p[i][j] = (double)(Nx-1-i)/Ny;
             else p[i][j] = 0;
         }
     }
     void initForce(){
-        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-            Eigen::Vector2d f0 = {0.0,-g0*dx};
-            Eigen::Vector2d f1 = {0.0,0.0};
+        Eigen::Vector2d f0 = {0.0,-g0*dx};
+        Eigen::Vector2d f1 = {0.0,0.0};
+        Eigen::Vector2d f2 = {0.0,-g0*dx};
+        for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
             //std::cout << f0.x() << "," << f0.y() << std::endl;
-            if(i == 0 || i == Nx-1 || j == 0 || j == Ny-1)fi[i][j] = f1;
-            else fi[i][j] = f0;
+            if(i == 0 || i == Nx || j == 0 || j == Ny-1)ufi[i][j] = f2.x();
+            else ufi[i][j] = f0.x();
+        }
+        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny+1;j++){
+            //std::cout << f0.x() << "," << f0.y() << std::endl;
+            if(i == 0 || i == Nx || j == 0 || j == Ny-1)vfi[i][j] = f1.y();
+            else vfi[i][j] = f0.y();
         }
     }
 };
