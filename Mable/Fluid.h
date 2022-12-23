@@ -145,7 +145,10 @@ struct Fluid{
 //            }
 //--------------------------------------------------------------------------------------------------
         }
-        for(int i=0; i<Nx;i++)for(int j=1;j<Ny;j++){
+//        for(int j=0;j<Ny;j++){
+//            u[0][j] = -u[1][j];
+//        }
+        for(int i=0;i<Nx;i++)for(int j=1;j<Ny;j++){
             v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
             //delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
 //            if(vmi[i][j] < eps){
@@ -160,6 +163,9 @@ struct Fluid{
 //                delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
 //            }
         }
+//        for(int i=0;i<Nx;i++){
+//            v[i][0] = -v[i][1];
+//        }
     }
     void print_pressure(){
         for(int i=0;i<Nx;i++){
@@ -187,9 +193,9 @@ struct Fluid{
         }
     }
     void initForce(){
-        Eigen::Vector2d f0 = {0.0,-g0*dx};
+        Eigen::Vector2d f0 = {0.0,g0*dx};
         Eigen::Vector2d f1 = {0.0,0.0};
-        Eigen::Vector2d f2 = {0.0,-g0*dx};
+        Eigen::Vector2d f2 = {0.0,g0*dx};
         for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
             //std::cout << f0.x() << "," << f0.y() << std::endl;
             if(i == 0 || i == Nx || j == 0 || j == Ny-1)ufi[i][j] = f2.x();

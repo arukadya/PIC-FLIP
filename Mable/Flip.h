@@ -16,9 +16,11 @@
 #include "vtk.h"
 #include "gnuplot.h"
 #include "functions.h"
-#define repeatCount 100
-#define alpha 0.5
+#define repeatCount 1000
+#define alpha 0.1
 #define mp 1 //粒子の重さ
+#define radius 0.01
+#define gamma 1
 #ifndef Flip_h
 #define Flip_h
 
@@ -26,6 +28,7 @@ struct particle{
     Eigen::Vector2d PIC_velocity;
     Eigen::Vector2d FLIP_velocity;
     Eigen::Vector2d velocity;
+    Eigen::Vector2d fixVector;
     Eigen::Vector2d position;
     std::pair<int,int>gridIndex = std::make_pair(-1, -1);
     particle(Eigen::Vector2d v,Eigen::Vector2d p){
@@ -48,33 +51,38 @@ struct PIC_FLIP : Fluid{
     std::vector<Eigen::Vector2d> vertices;//出力メッシュの頂点
     
     void execute(){
+        int cnt = 0;
         for(unsigned int i=0;i<repeatCount;i++){
-            std::cout << i << std::endl;
             locateParticlesOnGrid(map);
             //preprocessingParticles();
-            std::cout << "mapsize = " << map.size() << std::endl;
+            
             particlesVelocityToGrid();
-            std::cout << "P2G" << std::endl;
+            //std::cout << "P2G" << std::endl;
             calGridPressure();
-            std::cout << "GridPressure" << std::endl;
+            //std::cout << "GridPressure" << std::endl;
             PICgridVelocityToParticles();
             FLIP_gridVelocityToParticles();
-            std::cout << "G2P" << std::endl;
+            //std::cout << "G2P" << std::endl;
             advectParticles();
-            std::cout << "advectParticles" << std::endl;
-            output(vertices);
-            std::string OutputVTK = "outputVTK/output"+std::to_string(i)+".vtk";
-            std::ostringstream ssPressure;
-            ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << i << ".dat";
-            std::ostringstream ssMap;
-            ssMap << "outputMap/output" << std::setw(3) << std::setfill('0') << i << ".dat";
-            std::string OutputPressure(ssPressure.str());
-            std::string OutputMap(ssMap.str());
-            std::cout << OutputVTK.c_str() << std::endl;
-            
-            outputVTK(OutputVTK.c_str(),vertices);
-            outputPLT_P(Nx, Ny, dx, OutputPressure.c_str(), p);
-            outputPLT_M(Nx, Ny,OutputMap.c_str(), map);
+            //std::cout << "advectParticles" << std::endl;
+            if(i%10 == 0){
+                std::cout << i << std::endl;
+                std::cout << "mapsize = " << map.size() << std::endl;
+                
+                output(vertices);
+                std::string OutputVTK = "outputVTK/output"+std::to_string(cnt)+".vtk";
+                std::ostringstream ssPressure;
+                ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
+                std::ostringstream ssMap;
+                ssMap << "outputMap/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
+                std::string OutputPressure(ssPressure.str());
+                std::string OutputMap(ssMap.str());
+                std::cout << OutputVTK.c_str() << std::endl;
+                outputVTK(OutputVTK.c_str(),vertices);
+                outputPLT_P(Nx, Ny, dx, OutputPressure.c_str(), p);
+                outputPLT_M(Nx, Ny,OutputMap.c_str(), map);
+                cnt++;
+            }
         }
     }
     void output(std::vector<Eigen::Vector2d> &v){
@@ -89,7 +97,7 @@ struct PIC_FLIP : Fluid{
     void initParticles(){
         //std::cout << "initparticles" << std::endl;
 //        for(unsigned int i=Nx/2;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-        for(unsigned int i=Nx/3;i<Nx/3*2;i++)for(unsigned int j=0;j<Ny;j++){
+        for(unsigned int i=Nx/4;i<Nx/4*3;i++)for(unsigned int j=0;j<Ny/2;j++){
             Eigen::Vector2d v0 = {0.0,0};
             std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
             pos[0] = Eigen::Vector2d{(i+0.25)*dx,(j+0.25)*dx};
@@ -178,7 +186,7 @@ struct PIC_FLIP : Fluid{
                 u[i][j] += ufi[i][j] * dt;
             }
         }
-        std::cout << u[Nx/2][0]/dx << "," <<u[Nx/2][1]/dx<< std::endl;
+        //std::cout << u[Nx/2][0]/dx << "," <<u[Nx/2][1]/dx<< std::endl;
         //v
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
@@ -207,6 +215,8 @@ struct PIC_FLIP : Fluid{
             v[i][j] += vfi[i][j] * dt;
         }
     }
+    
+    
     
     void calGridPressure(){
         for(int i=0;i<Nx;i++)for(int j=0;j<Ny;j++){
@@ -336,16 +346,22 @@ struct PIC_FLIP : Fluid{
             //std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
         }
     }
-//    void preprocessingParticles(){
-//        locateParticlesOnGrid(map);
-//        for(int i=0;i<particles.size();i++){
-//            int keyx = particles[i].gridIndex.first;
-//            int keyy = particles[i].gridIndex.second;
-//            particles[i].velocity.x() += ufi[keyx][keyy]*dt;
-//            particles[i].velocity.y() += vfi[keyx][keyy]*dt;
-//            //pushout(particles[i].position, L,dx);
-//        }
-//        //locateParticlesOnGrid(map);
-//    }
+    void preprocessingParticles(){
+        locateParticlesOnGrid(map);
+        for(int i=0;i<particles.size();i++){
+            std::vector<int>key = {particles[i].gridIndex.first,particles[i].gridIndex.second};
+            auto val = map.at(key);
+            particles[i].fixVector = {0,0};
+            for(auto &j:val){
+                if(j == i)continue;
+                particles[i].fixVector += fixDensityVector(particles[j].position, particles[i].position, radius, gamma, dt);
+            }
+        }
+        for(int i=0;i<particles.size();i++){
+            particles[i].position += particles[i].fixVector;
+            pushout(particles[i].position, L,dx);
+        }
+        locateParticlesOnGrid(map);
+    }
 };
 #endif /* Flip_h */

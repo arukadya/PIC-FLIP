@@ -12,20 +12,29 @@ double kernelFunction(double x){
     if(x >-1 && x < 1)return x*x*fabs(x)/2 - x*x + (double)2/3;
     else return (2-fabs(x))*(2-fabs(x))*abs((2-fabs(x)))/6;
 }
-double weightFunction(Eigen::Vector2d px,Eigen::Vector2d gx,double dx){
+double weightFunction(Eigen::Vector2d &px,Eigen::Vector2d &gx,double dx){
     double w = kernelFunction((px.x()-gx.x())/dx)*kernelFunction((px.y()-gx.y())/dx);
     //std::cout << kernelFunction((px.x()-gx.x())/dx) << "," << kernelFunction((px.y()-gx.y())/dx) << std::endl;
     return w;
+}
+double smoothFunction(Eigen::Vector2d r,double dx){//dxは粒子半径
+    return fmax(0,1-(r.norm()/dx)*(r.norm()/dx));
+}
+double sharpFunction(Eigen::Vector2d r,double dx){
+    return fmax(0,1/((r.norm()/dx)*(r.norm()/dx)) - 1);
+}
+Eigen::Vector2d fixDensityVector(Eigen::Vector2d &pj,Eigen::Vector2d &pi,double dx,double gamma,double dt){
+    return -gamma*dt*dx*(pj-pi)/(pj-pi).norm()*smoothFunction(pj-pi, dx);
 }
 void pushout(Eigen::Vector2d &x,double L,double dx){
     //std::cout <<"x0:"<< x.x() << " " << x.y() << std::endl;
     std::vector<double>f(5,0);
     Eigen::Vector2d pushVector{0,0};
     double margin = dx;
-    f[1] = x.x();
+    f[1] = x.x()-dx;
     f[3] = L-x.x();
     f[2] = L-x.y();
-    f[4] = x.y();
+    f[4] = x.y()-dx;
     bool flg = false;
     //do{
         //f[0] = sqrt(x.x()*x.x() + x.y()*x.y()) - L/2;
