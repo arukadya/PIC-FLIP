@@ -16,71 +16,58 @@
 #include "vtk.h"
 #include "gnuplot.h"
 #include "functions.h"
-#define repeatCount 1000
-#define alpha 0.1
+#include "particle.h"
+#define repeatCount 500
+#define alpha 0
 #define mp 1 //粒子の重さ
-#define radius 0.01
-#define gamma 1
+#define radius 0.0025
+#define gamma 15
 #ifndef Flip_h
 #define Flip_h
 
-struct particle{
-    Eigen::Vector2d PIC_velocity;
-    Eigen::Vector2d FLIP_velocity;
-    Eigen::Vector2d velocity;
-    Eigen::Vector2d fixVector;
-    Eigen::Vector2d position;
-    std::pair<int,int>gridIndex = std::make_pair(-1, -1);
-    particle(Eigen::Vector2d v,Eigen::Vector2d p){
-        Eigen::Vector2d zero = {0,0};
-        velocity = v;
-        PIC_velocity = zero;
-        FLIP_velocity = zero;
-        position = p;
-    }
-    void setGridIndex(int x,int y){
-        gridIndex.first = x;
-        gridIndex.second = y;
-    }
-};
+
 
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
-    std::vector<particle> particles;//入力メッシュの頂点
+    std::vector<particle>particles;//入力メッシュの頂点
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>map;//ハッシュテーブル
     std::vector<Eigen::Vector2d> vertices;//出力メッシュの頂点
     
     void execute(){
         int cnt = 0;
+        preprocessingParticles();
         for(unsigned int i=0;i<repeatCount;i++){
-            locateParticlesOnGrid(map);
-            //preprocessingParticles();
-            
+            //locateParticlesOnGrid(map);
+            preprocessingParticles();
             particlesVelocityToGrid();
-            //std::cout << "P2G" << std::endl;
+            std::cout << "P2G" << std::endl;
             calGridPressure();
-            //std::cout << "GridPressure" << std::endl;
+            std::cout << "GridPressure" << std::endl;
             PICgridVelocityToParticles();
             FLIP_gridVelocityToParticles();
-            //std::cout << "G2P" << std::endl;
+            std::cout << "G2P" << std::endl;
             advectParticles();
-            //std::cout << "advectParticles" << std::endl;
-            if(i%10 == 0){
+            preprocessingParticles();
+            std::cout << "advectParticles" << std::endl;
+            if(i%5 == 0){
                 std::cout << i << std::endl;
                 std::cout << "mapsize = " << map.size() << std::endl;
-                
                 output(vertices);
                 std::string OutputVTK = "outputVTK/output"+std::to_string(cnt)+".vtk";
                 std::ostringstream ssPressure;
                 ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
                 std::ostringstream ssMap;
                 ssMap << "outputMap/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
+                std::ostringstream ssParticles;
+                ssParticles << "outputParticles/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
                 std::string OutputPressure(ssPressure.str());
                 std::string OutputMap(ssMap.str());
+                std::string OutputParticles(ssParticles.str());
                 std::cout << OutputVTK.c_str() << std::endl;
                 outputVTK(OutputVTK.c_str(),vertices);
                 outputPLT_P(Nx, Ny, dx, OutputPressure.c_str(), p);
                 outputPLT_M(Nx, Ny,OutputMap.c_str(), map);
+                outputPLT_particles(OutputParticles.c_str(),particles);
                 cnt++;
             }
         }
@@ -111,6 +98,14 @@ struct PIC_FLIP : Fluid{
                 weights.push_back(-1);
             }
         }
+//        for(int i=0;i<Nx;i++){
+//            particles.push_back(particle({0,0},{(i+0.5)*dx,0}));
+//            particles.push_back(particle({0,0},{(i+0.5)*dx,Ny*dx}));
+//        }
+//        for(int j=0;j<Ny;j++){
+//            particles.push_back(particle({0,0},{0,(j+0.5)*dx}));
+//            particles.push_back(particle({0,0},{Nx*dx,(j+0.5)*dx}));
+//        }
     }
     
     void locateParticlesOnGrid(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
@@ -148,13 +143,13 @@ struct PIC_FLIP : Fluid{
         //初期化
         for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
             umi[i][j] = 0;
-            old_u[i][j] = u[i][j];
+            old_u[i][j] = 0;
             u[i][j] = 0;
             //delta_u[i][j] = 0;
         }
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny+1;j++){
             vmi[i][j] = 0;
-            old_v[i][j] = v[i][j];
+            old_v[i][j] = 0;
             v[i][j] = 0;
             //delta_v[i][j] = 0;
         }
@@ -215,8 +210,6 @@ struct PIC_FLIP : Fluid{
             v[i][j] += vfi[i][j] * dt;
         }
     }
-    
-    
     
     void calGridPressure(){
         for(int i=0;i<Nx;i++)for(int j=0;j<Ny;j++){
@@ -342,23 +335,76 @@ struct PIC_FLIP : Fluid{
             particles[i].velocity = alpha*particles[i].FLIP_velocity +(1 - alpha)*particles[i].PIC_velocity;
             particles[i].position.x() += particles[i].velocity.x()*dt;
             particles[i].position.y() += particles[i].velocity.y()*dt;
-            pushout(particles[i].position, L,dx);
+            //pushout(particles[i].position, L,dx);
             //std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
         }
     }
     void preprocessingParticles(){
         locateParticlesOnGrid(map);
+        //各粒子について，４近傍の密度分布を修正するベクトルの計算
         for(int i=0;i<particles.size();i++){
             std::vector<int>key = {particles[i].gridIndex.first,particles[i].gridIndex.second};
+            std::vector<bool>F = {key[0]<Nx-1,key[1]<Ny-1,key[0]>0,key[1]>0};
+            std::vector<std::vector<int>>keys = {{key[0]+1,key[1]},{key[0],key[1]+1},{key[0]-1,key[1]},{key[0],key[1]-1}};
             auto val = map.at(key);
             particles[i].fixVector = {0,0};
             for(auto &j:val){
                 if(j == i)continue;
                 particles[i].fixVector += fixDensityVector(particles[j].position, particles[i].position, radius, gamma, dt);
             }
+            for(int k=0;k<4;k++){
+                if(F[k] && map.find(keys[k]) != map.end()){
+                    auto val = map.at(keys[k]);
+                    //particles[i].fixVector = {0,0};
+                    for(auto &j:val){
+                        if(j == i)continue;
+                        particles[i].fixVector += fixDensityVector(particles[j].position, particles[i].position, radius, gamma, dt);
+                    }
+                }
+            }
+//            std::cout << particles[i].fixVector.x() << "," << particles[i].fixVector.y() << std::endl;
         }
+        //再サンプリングして速度を修正
+        for(int i=0;i<particles.size();i++){
+            particles[i].fixVelocity = {0,0};
+            std::vector<int>key = {particles[i].gridIndex.first,particles[i].gridIndex.second};
+            std::vector<bool>F = {key[0]<Nx-1,key[1]<Ny-1,key[0]>0,key[1]>0};
+            std::vector<std::vector<int>>keys = {{key[0]+1,key[1]},{key[0],key[1]+1},{key[0]-1,key[1]},{key[0],key[1]-1}};
+            auto val = map.at(key);
+            Eigen::Vector2d sumA = {0,0};
+            double sumB = 0;
+            //bool flg = false;
+            for(auto &j:val){
+                if(j == i)continue;
+                //std::cout << particles[i].fixVector.x() << "," << particles[i].fixVector.y() << std::endl;
+                //fixParticleVelocity(particles[i], particles[j], radius, sumA, sumB, mp);
+                sumB += fixParticleVelocity(particles[i], particles[j], radius, mp);
+                sumA += fixParticleVelocity(particles[i], particles[j], radius, mp)*particles[j].velocity;
+                //flg = true;
+            }
+            for(int k=0;k<4;k++){
+                if(F[k] && map.find(keys[k]) != map.end()){
+                    auto val = map.at(keys[k]);
+                    for(auto &j:val){
+                        if(j == i)continue;
+                        //fixParticleVelocity(particles[i], particles[j], radius, sumA, sumB, mp);
+                        sumB += fixParticleVelocity(particles[i], particles[j], radius, mp);
+                        sumA += fixParticleVelocity(particles[i], particles[j], radius, mp)*particles[j].velocity;
+                        //flg = true;
+                        //std::cout << particles[j].velocity.x() << "," << particles[i].velocity.y()<< std::endl;
+                    }
+                }
+            }
+            if(sumB > 1.0e-4){
+                //std::cout << sumA.x() << "," << sumA.y() << "," << sumB << std::endl;
+                particles[i].fixVelocity = sumA/sumB;
+            }
+        }
+        //計算したベクトルで位置を修正
         for(int i=0;i<particles.size();i++){
             particles[i].position += particles[i].fixVector;
+            particles[i].velocity = particles[i].fixVelocity;
+            //std::cout << particles[i].fixVector.x() << "," << particles[i].fixVector.y() << std::endl;
             pushout(particles[i].position, L,dx);
         }
         locateParticlesOnGrid(map);

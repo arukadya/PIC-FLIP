@@ -7,7 +7,7 @@
 
 #ifndef gnuplot_h
 #define gnuplot_h
-
+#include "particle.h"
 void outputPLT_P(int nx,int ny,double dx,const char* OutputFileName,std::vector<std::vector<double>>&p){
     FILE *ofp = fopen(OutputFileName,"w");
     for(int i=0;i<nx;i++)for(int j=0;j<ny;j++){
@@ -24,6 +24,15 @@ void outputPLT_M(int nx,int ny,const char* OutputFileName,std::unordered_map<std
             continue;
         }
         else fprintf(ofp,"%d %d %d\n",i,j,(int)map.at(key).size());
+    }
+    fclose(ofp);
+}
+void outputPLT_particles(const char* OutputFileName,std::vector<particle> &particles){
+    FILE *ofp = fopen(OutputFileName,"w");
+    for(auto p:particles){
+        //double n = p.velocity.norm();
+        double n = p.fixVector.norm();
+        if(n > 1.0e-4)fprintf(ofp,"%lf %lf %lf %lf %lf\n ",p.position.x(),p.position.y(),p.fixVector.x(),p.fixVector.y(),n);
     }
     fclose(ofp);
 }

@@ -21,20 +21,35 @@ double smoothFunction(Eigen::Vector2d r,double dx){//dxは粒子半径
     return fmax(0,1-(r.norm()/dx)*(r.norm()/dx));
 }
 double sharpFunction(Eigen::Vector2d r,double dx){
-    return fmax(0,1/((r.norm()/dx)*(r.norm()/dx)) - 1);
+    //std::cout << "sharpInput1" << r << std::endl;
+    if(r.norm() < 1.0e-4)return fmax(0,1/((1.0e-4/dx)*(1.0e-4/dx)) - 1);
+    else return fmax(0,1/((r.norm()/dx)*(r.norm()/dx)) - 1);
 }
 Eigen::Vector2d fixDensityVector(Eigen::Vector2d &pj,Eigen::Vector2d &pi,double dx,double gamma,double dt){
-    return -gamma*dt*dx*(pj-pi)/(pj-pi).norm()*smoothFunction(pj-pi, dx);
+    if((pj-pi).norm() < 1.0e-4)return -gamma*dt*dx*(pj-pi)/(1.0e-4)*smoothFunction(pj-pi, dx);
+    else return -gamma*dt*dx*(pj-pi)/(pj-pi).norm()*smoothFunction(pj-pi, dx);
+}
+//void fixParticleVelocity(particle pi,particle pj,double dx,Eigen::Vector2d &sumA,double &sumB,double mp){
+//    //std::cout << "sharpInput0" << pj.position - (pi.position+pi.fixVector)<< std::endl;
+//    sumB += mp*sharpFunction(pj.position - (pi.position+pi.fixVector), dx);
+//    sumA += sumB*pj.velocity;
+//    //std::cout << sumA.x() << "," << sumA.y() << "," << sumB << std::endl;
+//}
+double fixParticleVelocity(particle pi,particle pj,double dx,double mp){
+    double sumB;//std::cout << "sharpInput0" << pj.position - (pi.position+pi.fixVector)<< std::endl;
+    sumB = mp*sharpFunction(pj.position - (pi.position+pi.fixVector), dx);
+    return sumB;
+    //std::cout << sumA.x() << "," << sumA.y() << "," << sumB << std::endl;
 }
 void pushout(Eigen::Vector2d &x,double L,double dx){
     //std::cout <<"x0:"<< x.x() << " " << x.y() << std::endl;
     std::vector<double>f(5,0);
     Eigen::Vector2d pushVector{0,0};
-    double margin = dx;
-    f[1] = x.x()-dx;
+    double margin = 0;
+    f[1] = x.x();
     f[3] = L-x.x();
     f[2] = L-x.y();
-    f[4] = x.y()-dx;
+    f[4] = x.y();
     bool flg = false;
     //do{
         //f[0] = sqrt(x.x()*x.x() + x.y()*x.y()) - L/2;

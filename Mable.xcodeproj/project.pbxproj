@@ -33,6 +33,7 @@
 		67B0653929214BE50094A3A0 /* Flip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flip.h; sourceTree = "<group>"; };
 		67B340E22946F28000A35561 /* gnuplot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gnuplot.h; sourceTree = "<group>"; };
 		67C35CBD294E06B5006B57ED /* Hasher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hasher.h; sourceTree = "<group>"; };
+		67C35CBE2956B961006B57ED /* particle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = particle.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +73,7 @@
 				67ACCC3C29196F5F00747A24 /* mable.h */,
 				67B0653829214A7C0094A3A0 /* Fluid.h */,
 				67B0653929214BE50094A3A0 /* Flip.h */,
+				67C35CBE2956B961006B57ED /* particle.h */,
 				67AEACE0293C9573007590E2 /* functions.h */,
 				67C35CBD294E06B5006B57ED /* Hasher.h */,
 			);

@@ -129,6 +129,7 @@ struct Fluid{
         //std::cout << "finGauss" << std::endl;
 //        print_velocity();
         for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
+            old_u[i][j] = u[i][j];
             u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
             //delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
 //---------多分質量０のグリッドの速さは０である------------------------------------------------------------
@@ -149,6 +150,7 @@ struct Fluid{
 //            u[0][j] = -u[1][j];
 //        }
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny;j++){
+            old_v[i][j] = v[i][j];
             v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
             //delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
 //            if(vmi[i][j] < eps){
@@ -198,13 +200,15 @@ struct Fluid{
         Eigen::Vector2d f2 = {0.0,g0*dx};
         for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
             //std::cout << f0.x() << "," << f0.y() << std::endl;
-            if(i == 0 || i == Nx || j == 0 || j == Ny-1)ufi[i][j] = f2.x();
-            else ufi[i][j] = f0.x();
+//            if(i == 0 || i == Nx || j == 0 || j == Ny-1)ufi[i][j] = f2.x();
+//            else ufi[i][j] = f0.x();
+            ufi[i][j] = f0.x();
         }
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny+1;j++){
             //std::cout << f0.x() << "," << f0.y() << std::endl;
-            if(i == 0 || i == Nx || j == 0 || j == Ny-1)vfi[i][j] = f1.y();
-            else vfi[i][j] = f0.y();
+//            if(i == 0 || i == Nx || j == 0 || j == Ny-1)vfi[i][j] = f1.y();
+//            else vfi[i][j] = f0.y();
+            vfi[i][j] = f0.y();
         }
     }
 };
