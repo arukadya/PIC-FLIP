@@ -10,53 +10,71 @@
 #include "functions.h"
 #include "particle.h"
 #define repeatCount 500
-#define alpha 0.95
-#define mp 1 //粒子の重さ
-#define radius 0.0025
-#define gamma 30
+#define alpha 0
+//#define mp  //粒子の重さ
+//#define radius 0.0025
+#define gamma 50
 #ifndef Flip_h
 #define Flip_h
+#define timer 2
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
     std::vector<particle>particles;//入力メッシュの頂点
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>map;//ハッシュテーブル
     std::vector<Eigen::Vector2d> vertices;//出力メッシュの頂点
-    
+    timeDisplayer TD;
+    double radius = dx/4;
+    double mp = pow(radius,3)*4/3;
     void execute(){
         int cnt = 0;
-        preprocessingParticles();
+        //preprocessingParticles();
         for(unsigned int i=0;i<repeatCount;i++){
+            if(timer == 2)TD.startTimer("execute");
             //locateParticlesOnGrid(map);
+            if(timer == 1)TD.startTimer("preprocess");
             preprocessingParticles();
+            if(timer == 1)TD.endTimer();
+            //if(timer)TD.startTimer("P2G");
             particlesVelocityToGrid();
-            //std::cout << "P2G" << std::endl;
+            //if(timer)TD.endTimer();
+            if(timer == 1)TD.startTimer("GridPressure");
             calGridPressure();
-            //std::cout << "GridPressure" << std::endl;
+            if(timer == 1)TD.endTimer();
+            //if(timer)TD.startTimer("G2P_PIC");
             PICgridVelocityToParticles();
+            //if(timer)TD.endTimer();
+            //if(timer)TD.startTimer("G2P_FLIP");
             FLIPgridVelocityToParticles();
-            //std::cout << "G2P" << std::endl;
+            //if(timer)TD.endTimer();
+            //if(timer)TD.startTimer("advect");
             advectParticles();
-            //std::cout << "advectParticles" << std::endl;
+            //if(timer)TD.endTimer();
+            
             if(i%(repeatCount/100) == 0){
-                std::cout << i << std::endl;
+                if(timer == 2){
+                    TD.endTimer();
+                    TD.startTimer("output");
+                }
+                //std::cout << i << std::endl;
                 std::cout << "mapsize = " << map.size() << std::endl;
                 output(vertices);
                 std::string OutputVTK = "outputVTK/output"+std::to_string(cnt)+".vtk";
-                std::ostringstream ssPressure;
-                ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
-                std::ostringstream ssMap;
-                ssMap << "outputMap/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
-                std::ostringstream ssParticles;
-                ssParticles << "outputParticles/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
-                std::string OutputPressure(ssPressure.str());
-                std::string OutputMap(ssMap.str());
-                std::string OutputParticles(ssParticles.str());
+                //std::ostringstream ssPressure;
+                //ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
+                //std::ostringstream ssMap;
+                //ssMap << "outputMap/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
+                //std::ostringstream ssParticles;
+                //ssParticles << "outputParticles/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
+                //std::string OutputPressure(ssPressure.str());
+                //std::string OutputMap(ssMap.str());
+                //std::string OutputParticles(ssParticles.str());
                 std::cout << OutputVTK.c_str() << std::endl;
                 outputVTK(OutputVTK.c_str(),vertices);
-                outputPLT_P(Nx, Ny, dx, OutputPressure.c_str(), p);
-                outputPLT_M(Nx, Ny,OutputMap.c_str(), map);
-                outputPLT_particles(OutputParticles.c_str(),particles);
+                //outputPLT_P(Nx, Ny, dx, OutputPressure.c_str(), p);
+                //outputPLT_M(Nx, Ny,OutputMap.c_str(), map);
+                //outputPLT_particles(OutputParticles.c_str(),particles);
                 cnt++;
+                if(timer == 2)TD.endTimer();
             }
         }
     }
@@ -72,28 +90,22 @@ struct PIC_FLIP : Fluid{
     void initParticles(){
         //std::cout << "initparticles" << std::endl;
 //        for(unsigned int i=Nx/2;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-        for(unsigned int i=Nx/4;i<Nx/4*3;i++)for(unsigned int j=0;j<Ny/2;j++){
-            Eigen::Vector2d v0 = {0.0,0};
-            std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
-            pos[0] = Eigen::Vector2d{(i+0.25)*dx,(j+0.25)*dx};
-            pos[1] = Eigen::Vector2d{(i+0.75)*dx,(j+0.25)*dx};
-            pos[2] = Eigen::Vector2d{(i+0.25)*dx,(j+0.75)*dx};
-            pos[3] = Eigen::Vector2d{(i+0.75)*dx,(j+0.75)*dx};
-            for(unsigned int k=0;k<4;k++){
-                //if(i==Nx-1 && j == Ny/2 - 1)std::cout << pos[k].x() << "," << pos[k].y() << std::endl;
-                particle tmp = particle(v0,pos[k]);
-                particles.push_back(tmp);
-                weights.push_back(-1);
+        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
+            if(i<Nx/4 || i>Nx/4*3){
+                Eigen::Vector2d v0 = {0.0,0};
+                std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
+                pos[0] = Eigen::Vector2d{(i+0.25)*dx,(j+0.25)*dx};
+                pos[1] = Eigen::Vector2d{(i+0.75)*dx,(j+0.25)*dx};
+                pos[2] = Eigen::Vector2d{(i+0.25)*dx,(j+0.75)*dx};
+                pos[3] = Eigen::Vector2d{(i+0.75)*dx,(j+0.75)*dx};
+                for(unsigned int k=0;k<4;k++){
+                    //if(i==Nx-1 && j == Ny/2 - 1)std::cout << pos[k].x() << "," << pos[k].y() << std::endl;
+                    particle tmp = particle(v0,pos[k]);
+                    particles.push_back(tmp);
+                    weights.push_back(-1);
+                }
             }
         }
-//        for(int i=0;i<Nx;i++){
-//            particles.push_back(particle({0,0},{(i+0.5)*dx,0}));
-//            particles.push_back(particle({0,0},{(i+0.5)*dx,Ny*dx}));
-//        }
-//        for(int j=0;j<Ny;j++){
-//            particles.push_back(particle({0,0},{0,(j+0.5)*dx}));
-//            particles.push_back(particle({0,0},{Nx*dx,(j+0.5)*dx}));
-//        }
     }
     
     void locateParticlesOnGrid(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
@@ -146,16 +158,18 @@ struct PIC_FLIP : Fluid{
         for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
             std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-            if(i != 1){
-                gx_list.push_back({(i-2)*dx,(j+0.5)*dx});
-                key_list.push_back({i-2,j});
-            }
-            if(i != Nx){
-                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
-                key_list.push_back({i+1,j});
-            }
+            bool flg = false;
+//            if(i != 1){
+//                gx_list.push_back({(i-2)*dx,(j+0.5)*dx});
+//                key_list.push_back({i-2,j});
+//            }
+//            if(i != Nx){
+//                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+//                key_list.push_back({i+1,j});
+//            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
+                    flg = true;
                     auto val = map.at(key_list[k]);
                     for(auto x:val){
                         Eigen::Vector2d px = particles[x].position;
@@ -164,29 +178,38 @@ struct PIC_FLIP : Fluid{
                         umi[i][j] += weight*mp;
                         u[i][j] += weight*mp*pv.x();
                     }
-                    u[i][j] /= umi[i][j];
-                    old_u[i][j] = u[i][j];
+//                    u[i][j] /= umi[i][j];
+//                    old_u[i][j] = u[i][j];
                 }
                 //else std::cout << key_list[k][0] << "," << key_list[k][1] << ":OutsideMap" << std::endl;
-                u[i][j] += ufi[i][j] * dt;
+//                u[i][j] += ufi[i][j] * dt;
+//                u[i][j] /= umi[i][j];
+//                old_u[i][j] = u[i][j];
                 //old_u[i][j] = u[i][j];
             }
+            if(flg){
+                u[i][j] += ufi[i][j] * dt;
+                u[i][j] /= umi[i][j];
+            }
+            old_u[i][j] = u[i][j];
         }
         //std::cout << u[Nx/2][0]/dx << "," <<u[Nx/2][1]/dx<< std::endl;
         //v
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-            if(j != 1){
-                gx_list.push_back({(i+0.5)*dx,(j-2)*dx});
-                key_list.push_back({i,j-2});
-            }
-            if(j != Ny){
-                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
-                key_list.push_back({i,j+1});
-            }
+            bool flg = false;
+//            if(j != 1){
+//                gx_list.push_back({(i+0.5)*dx,(j-2)*dx});
+//                key_list.push_back({i,j-2});
+//            }
+//            if(j != Ny){
+//                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+//                key_list.push_back({i,j+1});
+//            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
+                    flg = true;
                     auto val = map.at(key_list[k]);
                     for(auto x:val){
                         Eigen::Vector2d px = particles[x].position;
@@ -195,12 +218,19 @@ struct PIC_FLIP : Fluid{
                         vmi[i][j] += weight*mp;
                         v[i][j] += weight*mp*pv.y();
                     }
-                    v[i][j] /= vmi[i][j];
-                    old_v[i][j] = v[i][j];
+//                    v[i][j] /= vmi[i][j];
+//                    old_v[i][j] = v[i][j];
                 }
             }
-            v[i][j] += vfi[i][j] * dt;
+//            v[i][j] += vfi[i][j] * dt;
+//            v[i][j] /= vmi[i][j];
+//            old_v[i][j] = v[i][j];
             //old_v[i][j] = v[i][j];
+            if(flg){
+                v[i][j] += vfi[i][j] * dt;
+                v[i][j] /= vmi[i][j];
+            }
+            old_v[i][j] = v[i][j];
         }
         //copyVelocity();
     }
@@ -224,14 +254,14 @@ struct PIC_FLIP : Fluid{
         for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
             std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-            if(i != 1){
-                gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
-                key_list.insert(key_list.begin(),{i-2,j});
-            }
-            if(i != Nx){
-                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
-                key_list.push_back({i+1,j});
-            }
+//            if(i != 1){
+//                gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
+//                key_list.insert(key_list.begin(),{i-2,j});
+//            }
+//            if(i != Nx){
+//                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+//                key_list.push_back({i+1,j});
+//            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
@@ -247,14 +277,14 @@ struct PIC_FLIP : Fluid{
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-            if(j != 1){
-                gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
-                key_list.insert(key_list.begin(),{i,j-2});
-            }
-            if(j != Ny){
-                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
-                key_list.push_back({i,j+1});
-            }
+//            if(j != 1){
+//                gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
+//                key_list.insert(key_list.begin(),{i,j-2});
+//            }
+//            if(j != Ny){
+//                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+//                key_list.push_back({i,j+1});
+//            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
@@ -276,14 +306,14 @@ struct PIC_FLIP : Fluid{
                 //std::cout << u[i][j]-old_u[i][j] << ",";
                 std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
                 std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-                if(i != 1){
-                    gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
-                    key_list.insert(key_list.begin(),{i-2,j});
-                }
-                if(i != Nx){
-                    gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
-                    key_list.push_back({i+1,j});
-                }
+//                if(i != 1){
+//                    gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
+//                    key_list.insert(key_list.begin(),{i-2,j});
+//                }
+//                if(i != Nx){
+//                    gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+//                    key_list.push_back({i+1,j});
+//                }
                 for(int k=0;k<gx_list.size();k++){
                     if(map.find(key_list[k]) != map.end()){
                         auto val = map.at(key_list[k]);
@@ -303,14 +333,14 @@ struct PIC_FLIP : Fluid{
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-            if(j != 1){
-                gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
-                key_list.insert(key_list.begin(),{i,j-2});
-            }
-            if(j != Ny){
-                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
-                key_list.push_back({i,j+1});
-            }
+//            if(j != 1){
+//                gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
+//                key_list.insert(key_list.begin(),{i,j-2});
+//            }
+//            if(j != Ny){
+//                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+//                key_list.push_back({i,j+1});
+//            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);

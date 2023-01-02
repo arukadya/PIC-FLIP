@@ -4,10 +4,25 @@
 //
 //  Created by 須之内俊樹 on 2022/12/04.
 //
-
+#include <chrono>
 #ifndef functions_h
 #define functions_h
 
+struct timeDisplayer{
+    std::chrono::system_clock::time_point startTime;
+    std::chrono::system_clock::time_point endTime;
+    const char* str;
+    void startTimer(const char* s){
+        startTime = std::chrono::system_clock::now();
+        str = s;
+    }
+    void endTimer(){
+        endTime = std::chrono::system_clock::now();
+        double time = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count());
+        std::cout << str << ":" << time << "ms" << std::endl;
+        std::cout << std::endl;
+    }
+};
 double kernelFunction(double x){
     if(x >-1 && x < 1)return x*x*fabs(x)/2 - x*x + (double)2/3;
     else return (2-fabs(x))*(2-fabs(x))*abs((2-fabs(x)))/6;

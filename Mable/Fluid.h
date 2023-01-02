@@ -21,8 +21,8 @@
 #include <queue>
 #include <Eigen/Core>
 #include <iostream>
-#define Nx 50
-#define Ny 50 //グリッドの数
+#define Nx 64
+#define Ny 64 //グリッドの数
 #define g0 9.8
 struct Fluid{
     double dx;//セルの大きさ
@@ -78,7 +78,7 @@ struct Fluid{
     }
     void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
         double scale = dt/(rho*dx*dx);//左辺の係数部分
-        double eps = 1.0e-4;//ガウスザイデル法の精度
+        double eps = 1.0e-3;//ガウスザイデル法の精度
         double err;//ガウスザイデル法の残差
 //        std::cout << "inputP" << std::endl;
 //        print_pressure();
@@ -193,9 +193,9 @@ struct Fluid{
         }
     }
     void initForce(){
-        Eigen::Vector2d f0 = {0.0,-g0*dx};
+        Eigen::Vector2d f0 = {0.0,-g0};
         Eigen::Vector2d f1 = {0.0,0.0};
-        Eigen::Vector2d f2 = {0.0,g0*dx};
+        Eigen::Vector2d f2 = {0.0,g0};
         for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
             //std::cout << f0.x() << "," << f0.y() << std::endl;
 //            if(i == 0 || i == Nx || j == 0 || j == Ny-1)ufi[i][j] = f2.x();
