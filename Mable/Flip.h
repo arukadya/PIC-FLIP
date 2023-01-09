@@ -10,24 +10,24 @@
 #include "functions.h"
 #include "particle.h"
 #define repeatCount 500
-#define alpha 0
+#define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
-#define gamma 50
+#define gamma 10
 #ifndef Flip_h
 #define Flip_h
 #define timer 2
+#define extend 0
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
     std::vector<particle>particles;//入力メッシュの頂点
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>map;//ハッシュテーブル
     std::vector<Eigen::Vector2d> vertices;//出力メッシュの頂点
     timeDisplayer TD;
-    double radius = dx/4;
-    double mp = pow(radius,3)*4/3;
+    double radius = dx*3;
+    double mp = pow(radius,2)*3.14;
     void execute(){
         int cnt = 0;
-        //preprocessingParticles();
         for(unsigned int i=0;i<repeatCount;i++){
             if(timer == 2)TD.startTimer("execute");
             //locateParticlesOnGrid(map);
@@ -77,6 +77,9 @@ struct PIC_FLIP : Fluid{
                 if(timer == 2)TD.endTimer();
             }
         }
+        std::cout << "dx:" << dx << " dt:" << dt << " Nx*Ny:" << Nx*Ny << " repeat:" << repeatCount << std::endl;
+        std::cout << "alpha:" << alpha << " gamma:" << gamma << " radius:" << radius <<std::endl;
+        std::cout << "extend:" << extend << std::endl;
     }
     void output(std::vector<Eigen::Vector2d> &v){
         v.resize(particles.size());
@@ -91,7 +94,7 @@ struct PIC_FLIP : Fluid{
         //std::cout << "initparticles" << std::endl;
 //        for(unsigned int i=Nx/2;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-            if(i<Nx/4 || i>Nx/4*3){
+            if(i<Nx/8 || i>Nx/8*7){
                 Eigen::Vector2d v0 = {0.0,0};
                 std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
                 pos[0] = Eigen::Vector2d{(i+0.25)*dx,(j+0.25)*dx};
@@ -144,13 +147,13 @@ struct PIC_FLIP : Fluid{
         //copyVelocity();
         for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
             umi[i][j] = 0;
-            //old_u[i][j] = 0;
+            old_u[i][j] = 0;
             u[i][j] = 0;
             //delta_u[i][j] = 0;
         }
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny+1;j++){
             vmi[i][j] = 0;
-            //old_v[i][j] = 0;
+            old_v[i][j] = 0;
             v[i][j] = 0;
             //delta_v[i][j] = 0;
         }
@@ -159,14 +162,17 @@ struct PIC_FLIP : Fluid{
             std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
             std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
             bool flg = false;
-//            if(i != 1){
-//                gx_list.push_back({(i-2)*dx,(j+0.5)*dx});
-//                key_list.push_back({i-2,j});
-//            }
-//            if(i != Nx){
-//                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
-//                key_list.push_back({i+1,j});
-//            }
+            if(extend){
+                if(i != 1){
+                    gx_list.push_back({(i-2)*dx,(j+0.5)*dx});
+                    key_list.push_back({i-2,j});
+                }
+                if(i != Nx){
+                    gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+                    key_list.push_back({i+1,j});
+                }
+            }
+            
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     flg = true;
@@ -188,10 +194,12 @@ struct PIC_FLIP : Fluid{
                 //old_u[i][j] = u[i][j];
             }
             if(flg){
-                u[i][j] += ufi[i][j] * dt;
                 u[i][j] /= umi[i][j];
+                old_u[i][j] = u[i][j];
+                u[i][j] += ufi[i][j] * dt/umi[i][j];
+                //if(fabs(u[i][j]) > 1.0e-10)std::cout << umi[i][j] << "," << u[i][j] << std::endl;
             }
-            old_u[i][j] = u[i][j];
+            //std::cout << old_u[i][j] << "," << u[i][j] << std::endl;
         }
         //std::cout << u[Nx/2][0]/dx << "," <<u[Nx/2][1]/dx<< std::endl;
         //v
@@ -199,14 +207,16 @@ struct PIC_FLIP : Fluid{
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
             bool flg = false;
-//            if(j != 1){
-//                gx_list.push_back({(i+0.5)*dx,(j-2)*dx});
-//                key_list.push_back({i,j-2});
-//            }
-//            if(j != Ny){
-//                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
-//                key_list.push_back({i,j+1});
-//            }
+            if(extend){
+                if(j != 1){
+                    gx_list.push_back({(i+0.5)*dx,(j-2)*dx});
+                    key_list.push_back({i,j-2});
+                }
+                if(j != Ny){
+                    gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+                    key_list.push_back({i,j+1});
+                }
+            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     flg = true;
@@ -227,10 +237,11 @@ struct PIC_FLIP : Fluid{
 //            old_v[i][j] = v[i][j];
             //old_v[i][j] = v[i][j];
             if(flg){
-                v[i][j] += vfi[i][j] * dt;
                 v[i][j] /= vmi[i][j];
+                old_v[i][j] = v[i][j];
+                v[i][j] += vfi[i][j] * dt/vmi[i][j];
             }
-            old_v[i][j] = v[i][j];
+            
         }
         //copyVelocity();
     }
@@ -254,14 +265,16 @@ struct PIC_FLIP : Fluid{
         for(int i=1;i<Nx+1;i++)for(int j=0;j<Ny;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
             std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-//            if(i != 1){
-//                gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
-//                key_list.insert(key_list.begin(),{i-2,j});
-//            }
-//            if(i != Nx){
-//                gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
-//                key_list.push_back({i+1,j});
-//            }
+            if(extend){
+                if(i != 1){
+                    gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
+                    key_list.insert(key_list.begin(),{i-2,j});
+                }
+                if(i != Nx){
+                    gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+                    key_list.push_back({i+1,j});
+                }
+            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
@@ -277,14 +290,16 @@ struct PIC_FLIP : Fluid{
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-//            if(j != 1){
-//                gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
-//                key_list.insert(key_list.begin(),{i,j-2});
-//            }
-//            if(j != Ny){
-//                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
-//                key_list.push_back({i,j+1});
-//            }
+            if(extend){
+                if(j != 1){
+                    gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
+                    key_list.insert(key_list.begin(),{i,j-2});
+                }
+                if(j != Ny){
+                    gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+                    key_list.push_back({i,j+1});
+                }
+            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
@@ -300,20 +315,25 @@ struct PIC_FLIP : Fluid{
     }
     void FLIPgridVelocityToParticles(){
 //-----------------------速度の初期化は不要-----------------------------------------------
-        for(auto &p:particles)p.FLIP_velocity = {0,0};
+        for(auto &p:particles){
+            p.FLIP_velocity = {0,0};
+            p.FLIP_velocity = p.velocity;
+        }
         for(int i=1;i<Nx+1;i++){
             for(int j=0;j<Ny;j++){
                 //std::cout << u[i][j]-old_u[i][j] << ",";
                 std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
                 std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-//                if(i != 1){
-//                    gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
-//                    key_list.insert(key_list.begin(),{i-2,j});
-//                }
-//                if(i != Nx){
-//                    gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
-//                    key_list.push_back({i+1,j});
-//                }
+                if(extend){
+                    if(i != 1){
+                        gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
+                        key_list.insert(key_list.begin(),{i-2,j});
+                    }
+                    if(i != Nx){
+                        gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
+                        key_list.push_back({i+1,j});
+                    }
+                }
                 for(int k=0;k<gx_list.size();k++){
                     if(map.find(key_list[k]) != map.end()){
                         auto val = map.at(key_list[k]);
@@ -333,14 +353,16 @@ struct PIC_FLIP : Fluid{
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
             std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
             std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-//            if(j != 1){
-//                gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
-//                key_list.insert(key_list.begin(),{i,j-2});
-//            }
-//            if(j != Ny){
-//                gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
-//                key_list.push_back({i,j+1});
-//            }
+            if(extend){
+                if(j != 1){
+                    gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
+                    key_list.insert(key_list.begin(),{i,j-2});
+                }
+                if(j != Ny){
+                    gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
+                    key_list.push_back({i,j+1});
+                }
+            }
             for(int k=0;k<gx_list.size();k++){
                 if(map.find(key_list[k]) != map.end()){
                     auto val = map.at(key_list[k]);
@@ -355,10 +377,18 @@ struct PIC_FLIP : Fluid{
                 }
             }
         }
-        for(auto &p:particles){
-            p.FLIP_velocity += p.velocity;
-            //if(p.FLIP_velocity.norm() > 1.0e-4)std::cout << p.FLIP_velocity.x() << ","  << p.FLIP_velocity.y() << std::endl;
-        }
+//        auto val = map.at({0,0});
+//        for(auto x:val){
+//            std::cout << particles[x].FLIP_velocity.x() << "," << particles[x].FLIP_velocity.y() << std::endl;
+//        }
+//        for(int i=0;i<Ny;i++){
+//            std::cout << u[Nx-1][i] << "," << old_u[Nx-1][i] << std::endl;
+//        }
+//        for(int i=0;i<Nx+1;i++){
+//            for(int j=0;j<Ny;j++){
+//                std::cout << old_u[i][j] << ",";
+//            }std::cout << std::endl;
+//        }
     }
     void advectParticles(){
         //std::cout << L << std::endl;
@@ -368,7 +398,7 @@ struct PIC_FLIP : Fluid{
             particles[i].position.x() += particles[i].velocity.x()*dt;
             particles[i].position.y() += particles[i].velocity.y()*dt;
             pushout(particles[i].position, L,dx);
-            //std::cout <<"x1:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
+            //std::cout << particles[i].velocity.x() << " " << particles[i].velocity.y() << std::endl;
         }
     }
     void preprocessingParticles(){
@@ -430,13 +460,13 @@ struct PIC_FLIP : Fluid{
             if(sumB > 1.0e-4){
                 //std::cout << sumA.x() << "," << sumA.y() << "," << sumB << std::endl;
                 particles[i].fixVelocity = sumA/sumB;
+                particles[i].velocity = particles[i].fixVelocity;
             }
         }
         //計算したベクトルで位置を修正
         for(int i=0;i<particles.size();i++){
             particles[i].position += particles[i].fixVector;
-            particles[i].velocity = particles[i].fixVelocity;
-            //std::cout << particles[i].fixVector.x() << "," << particles[i].fixVector.y() << std::endl;
+            //particles[i].velocity = particles[i].fixVelocity;
             pushout(particles[i].position, L,dx);
         }
         locateParticlesOnGrid(map);

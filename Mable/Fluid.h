@@ -78,7 +78,7 @@ struct Fluid{
     }
     void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
         double scale = dt/(rho*dx*dx);//左辺の係数部分
-        double eps = 1.0e-3;//ガウスザイデル法の精度
+        double eps = 1.0e-4;//ガウスザイデル法の精度
         double err;//ガウスザイデル法の残差
 //        std::cout << "inputP" << std::endl;
 //        print_pressure();
@@ -130,42 +130,14 @@ struct Fluid{
 //        print_velocity();
         for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
             u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
+            //if(fabs(u[i][j] > 1.0e-10))std::cout << i << "," << j << ":"<< u[i][j] << std::endl;
             //delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
-//---------多分質量０のグリッドの速さは０である------------------------------------------------------------
-//            if(umi[i][j] < eps){
-//                //u[i][j] =u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
-//                u[i][j] = 0;
-//                delta_u[i][j] = -u[i][j];
-//            }
-//            else{
-//               u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx + dt*ufi[i][j]/umi[i][j];
-//                delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx + dt*ufi[i][j]/umi[i][j];
-//                u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
-//                delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
-//            }
-//--------------------------------------------------------------------------------------------------
         }
-//        for(int j=0;j<Ny;j++){
-//            u[0][j] = -u[1][j];
-//        }
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny;j++){
             v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
-            //delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
-//            if(vmi[i][j] < eps){
-//               v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
-//                v[i][j] = 0;
-//                delta_v[i][j] = -v[i][j];
-//            }
-//            else {
-//                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx + dt*vfi[i][j]/vmi[i][j];
-//                delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx + dt*vfi[i][j]/vmi[i][j];
-//                v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
-//                delta_v[i][j] = -dt/rho * (p[i][j]-p[i][j-1])/dx;
-//            }
         }
-//        for(int i=0;i<Nx;i++){
-//            v[i][0] = -v[i][1];
-//        }
+
+       //print_velocity();
     }
     void print_pressure(){
         for(int i=0;i<Nx;i++){
@@ -177,13 +149,17 @@ struct Fluid{
         std::cout << std::endl;
     }
     void print_velocity(){
-        for(int i=0;i<Nx;i++){
+        //for(int i=0;i<Nx;i++){
             for(int j=0;j<Ny;j++){
-            std::cout << v[i][j] << " ";
+            std::cout << u[1][j] << " ";
             }
             std::cout << std::endl;
+        for(int j=0;j<Ny;j++){
+        std::cout << u[Nx-1][j] << " ";
         }
         std::cout << std::endl;
+        //}
+        //std::cout << std::endl;
     }
     void initPressure(){
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
