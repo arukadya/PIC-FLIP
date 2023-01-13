@@ -9,11 +9,11 @@
 #include "gnuplot.h"
 #include "functions.h"
 #include "particle.h"
-#define repeatCount 500
+#define repeatCount 2000
 #define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
-#define gamma 10
+#define gamma 1
 #ifndef Flip_h
 #define Flip_h
 #define timer 2
@@ -24,7 +24,7 @@ struct PIC_FLIP : Fluid{
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>map;//ハッシュテーブル
     std::vector<Eigen::Vector2d> vertices;//出力メッシュの頂点
     timeDisplayer TD;
-    double radius = dx*3;
+    double radius = dx*2;
     double mp = pow(radius,2)*3.14;
     void execute(){
         int cnt = 0;
@@ -94,7 +94,7 @@ struct PIC_FLIP : Fluid{
         //std::cout << "initparticles" << std::endl;
 //        for(unsigned int i=Nx/2;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-            if(i<Nx/8 || i>Nx/8*7){
+            if(i<Nx/4){
                 Eigen::Vector2d v0 = {0.0,0};
                 std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
                 pos[0] = Eigen::Vector2d{(i+0.25)*dx,(j+0.25)*dx};
@@ -110,7 +110,7 @@ struct PIC_FLIP : Fluid{
             }
         }
     }
-    
+
     void locateParticlesOnGrid(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
         std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>m;
         for(int i=0;i<particles.size();i++){
@@ -395,6 +395,7 @@ struct PIC_FLIP : Fluid{
         for(int i=0;i<particles.size();i++){
             //std::cout <<"x0:"<< particles[i].position.x() << " " << particles[i].position.y() << std::endl;
             particles[i].velocity = alpha*particles[i].FLIP_velocity + (1 - alpha)*particles[i].PIC_velocity;
+            if(particles[i].velocity.norm() * dt > dx)std::cout << "CFLError" << std::endl;
             particles[i].position.x() += particles[i].velocity.x()*dt;
             particles[i].position.y() += particles[i].velocity.y()*dt;
             pushout(particles[i].position, L,dx);
