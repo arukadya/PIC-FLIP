@@ -1,7 +1,7 @@
 \documentclass[a4j,12pt]{jreport}
 %\documentclass{jreport}
 \usepackage[dvipdfmx]{graphicx}
-% \usepackage[dvipdfmx]{graphics}
+\usepackage[dvipdfmx]{graphics}
 \usepackage{amsmath,amssymb}
 % \usepackage{amsmath}
 %\usepackage{pxjahyper}
@@ -169,6 +169,13 @@ $$\nabla\boldsymbol{\cdot}\bm{u}(\bm{x},t+1) =  \nabla\boldsymbol{\cdot}\bm{u}^*
 \end{equation} 
 この式を満たすような圧力を求め，式(\ref{eq:uncalculated_pressure})に代入することによって，次の時刻の流速$\bm{u}(\bm{x},t+1)$が計算できる．式(\ref{eq:calculated_pressure})のような微分方程式はポアソン方程式と呼ばれ，境界条件が分かれば解が存在することが知られている．ここでいう境界条件とは，扱う領域の境界での$p(\bm{x},t)$の値がわかっていることとなる．
 \subsubsection{格子法の物理量のサンプリング方法} \label{subsec:grid_sampling}
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=60mm]{staggerd.png}
+\caption{スタッガード格子}
+\end{center}
+\end{figure}
+
 CGの流体シミュレーションにおいて，Fedkiewらの，Marker-And-Cell(MAC)法で格子を離散化する方法がよく用いられている．この手法では，扱う領域を正方形の格子に区切り，圧力を格子の中心に配置する．流速は格子面の中心に，その格子面と垂直な流速の成分を配置する．例えばx-y平面に並行な格子面には，その地点での流速のz成分を配置する．これはスタッガード格子と呼ばれている．この手法は格子点に全ての物理量を配置するコロケート格子と比べ，境界付近の流速が表現しやすく，それらしいシミュレーションができるだけでなく，ポアソン方程式の境界条件の設定も容易である．具体的には，格子が壁に隣接している場合，その面からの流体の流入出はゼロであるため，壁面方向の圧力差と，壁面と隣接している面の中心に配置されている流速成分は共にゼロにする．
 
 スタッガード格子を用いた，格子法の線形項の計算の離散化方法について考える．
@@ -325,8 +332,23 @@ q(\bm{p_i}) = \frac{\sum\limits_j m_jq_jW_{sharp}(p^*_j - p_i,d_i)}{\sum\limits_
 次は粒子の速度を格子にわたす．格子点ごとに，カーネル関数の値が非ゼロになるような範囲内の粒子を探索し，式（\ref{eq:P2G}）を用いて格子の速度を計算する．例えばカーネル関数として，式（\ref{eq:kernel}）を利用するとすると，計算している格子の，このとき，粒子の速度のうち，速度を保存している配列の，保存している速度成分のみを受け渡す．同時に格子の質量も計算される．FLIPで，後に速度の変化量を計算するため，この段階で計算した速度を保存する．
 具体的なアルゴリズムは以下のようになる．
 
+\section{シミュレーション領域の定義} \label{sec:levelsetserface}
+本手法では，シミュレーションは正方形の内部の領域内で行う．正方形の一辺の長さ$L$は，スタッガード格子の水平方向の数を$N$，スタッガード格子の一辺の長さを$dx$とすると，$L = Ndx$である．
+4点$(0,0)，(L,0)，(0,L)，(L,L)$を頂点とするような正方形のレベルセットサーフェス$\varphi(x,y)$を，以下のように定義する．
+\begin{equation}\label{eq:levelsetserface}
+\varphi(x,y)
+\begin{cases}
+(x,y) & x \le0 , y \le 0\\
+(L - x,y) & L \le x , y \le 0\\
+(x,L-y) & x \le0 , L \le y)\\
+(L-x,L-y) & L \le x , L \le y)\\
+(0,0) & else\\
+\end{cases}
+\end{equation} 
+このようにして定義されるレベルセットサーフェスは，粒子の座標を引数とし，4点$(0,0)，(L,0)，(0,L)，(L,L)$を頂点とするような正方形から外に出ていだ場合は，正方形領域に最短距離で戻すようなベクトルを返り値として返す．粒子に対して移流計算や粒子位置の補正を行うと，シミュレーション領域から粒子が出ていってしまうことがあるため，そのような計算を行った後に全粒子に対して領域内部に戻す処理を行う．
 
-
+\section{シミュレーションの定数や，カーネル関数の決定} \label{sec:constant}
+流体シミュレーションにおけるさまざまな定数や，カーネル関数は，シミュレーションしたい流体や，シミュレーションの手法によってどのような値を用いるのが最適かは異なっている．
 \chapter{計算機実験} \label{chapter:5}
 
 一例として，和文の著書\cite{suetake}，和文の論文誌\cite{kusano}，英文の編書\cite{fuortes}，

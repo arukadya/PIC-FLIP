@@ -25,7 +25,12 @@ struct timeDisplayer{
 };
 double kernelFunction(double x){
     if(x >-1 && x < 1)return x*x*fabs(x)/2 - x*x + (double)2/3;
-    else return (2-fabs(x))*(2-fabs(x))*abs((2-fabs(x)))/6;
+//    else return (2-fabs(x))*(2-fabs(x))*abs((2-fabs(x)))/6;
+    else return (2-fabs(x))*(2-fabs(x))/6;
+}
+double sharp_kernel(double x){
+    if(x >-1/2 && x < 1/2)return 3/4 - x*x;
+    else return (3/4 - fabs(x))*(3/4 - fabs(x))/2;
 }
 double weightFunction(Eigen::Vector2d &px,Eigen::Vector2d &gx,double dx){
     double w = kernelFunction((px.x()-gx.x())/dx)*kernelFunction((px.y()-gx.y())/dx);

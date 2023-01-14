@@ -9,7 +9,7 @@
 #include "gnuplot.h"
 #include "functions.h"
 #include "particle.h"
-#define repeatCount 2000
+#define repeatCount 10000
 #define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
@@ -94,7 +94,7 @@ struct PIC_FLIP : Fluid{
         //std::cout << "initparticles" << std::endl;
 //        for(unsigned int i=Nx/2;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
         for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-            if(i<Nx/4){
+            if((i<Nx/4 || i > Nx/4 * 3) && (j > Ny/2)){
                 Eigen::Vector2d v0 = {0.0,0};
                 std::vector<Eigen::Vector2d>pos(4);//1グリッドにn^2個置くのが流儀らしい
                 pos[0] = Eigen::Vector2d{(i+0.25)*dx,(j+0.25)*dx};
