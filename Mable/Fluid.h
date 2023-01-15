@@ -20,10 +20,15 @@
 #include <unordered_map>
 #include <queue>
 #include <Eigen/Core>
+#include <Eigen/IterativeLinearSolvers>
 #include <iostream>
 #define Nx 64
 #define Ny 64 //グリッドの数
 #define g0 9.8
+using ScalarType = double;
+using IndexType = int64_t;
+using Triplet = Eigen::Triplet<ScalarType, IndexType>;
+using SparseMatrix = Eigen::SparseMatrix<ScalarType>;
 struct Fluid{
     double dx;//セルの大きさ
     double dt;//時間の刻み幅
@@ -35,6 +40,7 @@ struct Fluid{
     //std::vector<std::vector<double>>delta_u;//水平
     //std::vector<std::vector<double>>delta_v;//鉛直
     std::vector<std::vector<double>>p;//圧力
+    std::vector<std::vector<double>>p_Eigen;//圧力
     std::vector<std::vector<double>>umi;//Gridの重さ
     std::vector<std::vector<double>>vmi;//Gridの重さ
     //std::vector<std::vector<Eigen::Vector2d>>fi;//Gridに加わる外力
@@ -54,6 +60,7 @@ struct Fluid{
         old_v = vertical_v;
         //delta_v = vertical_v;
         p = pressure;//p[nx][ny]
+        p_Eigen = pressure;
         umi = gridUM;
         vmi = gridVM;
         ufi = gridUF;
@@ -77,57 +84,48 @@ struct Fluid{
         return ret;
     }
     void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
-        double scale = dt/(rho*dx*dx);//左辺の係数部分
-        double eps = 1.0e-4;//ガウスザイデル法の精度
-        double err;//ガウスザイデル法の残差
-//        std::cout << "inputP" << std::endl;
-//        print_pressure();
-        do{
-            err = 0.0;
-        //圧力場を求める
-            for(int j=0;j<Ny;j++)for(int i=0;i<Nx;i++){
+        SparseMatrix A(Nx*Ny,Nx*Ny);
+        Eigen::VectorXd b = Eigen::VectorXd::Zero(Nx*Ny);
+        Eigen::VectorXd px;
+        //Tripletの計算
+        std::vector<Triplet> triplets;
+        for(int i=0;i<Nx;i++){
+            for(int j=0;j<Ny;j++){
                 std::vector<int>key = {i,j};
                 if(map.find(key) == map.end()){
                     p[i][j] = 0;
                     continue;
                 }
+                double scale = dt/(rho*dx*dx);
                 //std::cout << i << "," << j << std::endl;
                 double D[4] = {1.0,1.0,-1.0,-1.0};//周囲4方向に向かって働く、圧力の向き
                 //double F[4] = {(double)(i<Nx-1),(double)(j<Ny-1),(double)(i>0),(double)(j>0)};//境界条件。壁なら0,流体なら1
                 std::vector<int> F = DirichletBoundaryCondition(i,j,map);
-                double P[4] = {//pn。周囲4つのセルの圧力値
-                    (F[0] ? p[i+1][j] : 0.0),
-                    (F[1] ? p[i][j+1] : 0.0),
-                    (F[2] ? p[i-1][j] : 0.0),
-                    (F[3] ? p[i][j-1] : 0.0)};
-                
                 F = {i<Nx-1,j<Ny-1,i>0,j>0};
-                //std::cout << P[0] << " " << P[1] << " " << P[2] << " " << P[3] << std::endl;
-                //std::cout << i << "," << j << std::endl;
-                //std::cout << i << "," << j << std::endl;
                 double U[4] = {u[i+1][j],v[i][j+1],u[i][j],v[i][j]};
-                //セルの圧力値を求める
-                double det = 0.0;//左辺のdeterminant
-                int sumF = 0;
-                double sum_L = 0.0;
-                double sum_R = 0.0;
+                double sumP = 0;
                 for(int n=0;n<4;n++){
-                    sumF += F[n];
-                    det += F[n]*scale;
-                    //sum_L += F[n]*P[n]*scale;
-                    sum_L += P[n]*scale;
-                    sum_R += F[n]*D[n]*U[n]/dx;
+                    sumP += -F[n]*scale;
+                    b(i*Nx+j) += D[n]*F[n]*U[n]/dx;
                 }
-                //std::cout << "det:" << det << " sum_L:" << sum_L << " sum_R:" << sum_R << std::endl;
-                err = fmax(err,fabs(det*p[i][j]-sum_L+sum_R));
-                if(sumF == 0)p[i][j] = 0;
-                else p[i][j] = (sum_L-sum_R)/det;
-                //std::cout << p[i][j] <<std::endl;
+                triplets.emplace_back(i*Nx+j,i*Nx+j, sumP);
+                if(F[0])triplets.emplace_back(i*Nx+j,(i+1)*Nx+j, F[0]*scale);
+                if(F[1])triplets.emplace_back(i*Nx+j,i*Nx+j+1, F[1]*scale);
+                if(F[2])triplets.emplace_back(i*Nx+j,(i-1)*Nx+j, F[2]*scale);
+                if(F[3])triplets.emplace_back(i*Nx+j,i*Nx+j-1, F[3]*scale);
             }
-        }while(eps<err);//反復回数は初期値と収束速度？に依存。定数回なら全体で計算量はO(n)
-        //新しい流速を求める。u(t+1) = u* - (dt/rho)grad(p)
-        //std::cout << "finGauss" << std::endl;
-//        print_velocity();
+        }
+        A.setFromTriplets(triplets.begin(), triplets.end());
+//        Eigen::ConjugateGradient<SparseMatrix> solver;
+        Eigen::BiCGSTAB<SparseMatrix> solver;
+        solver.compute(A);
+        px = solver.solve(b);
+        for(int i=0;i<Nx;i++){
+            for(int j=0;j<Ny;j++){
+                //p_Eigen[i][j] = px(i*Nx+j);
+                p[i][j] = px(i*Nx+j);
+            }
+        }
         for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
             u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
             //if(fabs(u[i][j] > 1.0e-10))std::cout << i << "," << j << ":"<< u[i][j] << std::endl;
@@ -136,17 +134,13 @@ struct Fluid{
         for(int i=0;i<Nx;i++)for(int j=1;j<Ny;j++){
             v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
         }
-
-       //print_velocity();
     }
     void print_pressure(){
         for(int i=0;i<Nx;i++){
             for(int j=0;j<Ny;j++){
-            std::cout << p[i][j] << " ";
+                std::cout << i <<","<< j << " " <<p[i][j] << "," << p_Eigen[i][j] << std::endl;
             }
-            std::cout << std::endl;
         }
-        std::cout << std::endl;
     }
     void print_velocity(){
         //for(int i=0;i<Nx;i++){
@@ -183,18 +177,6 @@ struct Fluid{
 //            if(i == 0 || i == Nx || j == 0 || j == Ny-1)vfi[i][j] = f1.y();
 //            else vfi[i][j] = f0.y();
             vfi[i][j] = f0.y();
-        }
-    }
-    void copyVelocity(){
-        for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
-            old_u[i][j] = u[i][j];
-        }
-        for(unsigned int i=0;i<Nx;i++){
-            for(unsigned int j=0;j<Ny+1;j++){
-                //std::cout << "old:" << old_v[i][j] << " new:" << v[i][j];
-                old_v[i][j] = v[i][j];
-            }
-            //std::cout << std::endl;
         }
     }
 };
