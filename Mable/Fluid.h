@@ -100,14 +100,14 @@ struct Fluid{
                 //std::cout << i << "," << j << std::endl;
                 double D[4] = {1.0,1.0,-1.0,-1.0};//周囲4方向に向かって働く、圧力の向き
                 //double F[4] = {(double)(i<Nx-1),(double)(j<Ny-1),(double)(i>0),(double)(j>0)};//境界条件。壁なら0,流体なら1
-                std::vector<int> F = DirichletBoundaryCondition(i,j,map);
-                F = {i<Nx-1,j<Ny-1,i>0,j>0};
+                std::vector<int> F = {i<Nx-1,j<Ny-1,i>0,j>0};
                 double U[4] = {u[i+1][j],v[i][j+1],u[i][j],v[i][j]};
                 double sumP = 0;
                 for(int n=0;n<4;n++){
                     sumP += -F[n]*scale;
                     b(i*Nx+j) += D[n]*F[n]*U[n]/dx;
                 }
+                F = DirichletBoundaryCondition(i,j,map);
                 triplets.emplace_back(i*Nx+j,i*Nx+j, sumP);
                 if(F[0])triplets.emplace_back(i*Nx+j,(i+1)*Nx+j, F[0]*scale);
                 if(F[1])triplets.emplace_back(i*Nx+j,i*Nx+j+1, F[1]*scale);
