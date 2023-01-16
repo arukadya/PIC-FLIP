@@ -33,7 +33,7 @@ void inputVTK(const char* InputFileName,std::vector<Eigen::Vector3d> &Vertices,s
     }
     fclose(ifp);
 }
-void outputVTK(const char* OutputFileName,std::vector<Eigen::Vector2d> &Vertices){
+void outputVTK(const char* OutputFileName,std::vector<Eigen::Vector3d> &Vertices){
     FILE *ofp = fopen(OutputFileName,"w");
     fprintf(ofp,"# vtk DataFile Version 2.0\n");
     fprintf(ofp,"Title Data\n");
@@ -41,7 +41,7 @@ void outputVTK(const char* OutputFileName,std::vector<Eigen::Vector2d> &Vertices
     fprintf(ofp,"DATASET UNSTRUCTURED_GRID\n");
     fprintf(ofp,"POINTS %d float\n",(int)Vertices.size());
     for(auto &x:Vertices){
-        fprintf(ofp,"%lf %lf 0\n",x(0),x(1));
+        fprintf(ofp,"%lf %lf %lf\n",x(0),x(1),x(2));
     }
     fprintf(ofp,"\n");
     fprintf(ofp,"CELL_TYPES %d\n",(int)Vertices.size());

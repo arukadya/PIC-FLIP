@@ -42,6 +42,7 @@
 		67D7496729727F1B0010E44E /* logo_color.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_color.png; sourceTree = "<group>"; };
 		67D7496829727F1B0010E44E /* Bthesis_main.tex */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bthesis_main.tex; sourceTree = "<group>"; };
 		67D7496929727F1B0010E44E /* Bthesis_main.toc */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bthesis_main.toc; sourceTree = "<group>"; };
+		67D749702975445D0010E44E /* Array3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Array3d.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +82,7 @@
 				676BFDDA292112B1003D6FAB /* testdata.h */,
 				67ACCC3C29196F5F00747A24 /* mable.h */,
 				67B0653829214A7C0094A3A0 /* Fluid.h */,
+				67D749702975445D0010E44E /* Array3d.h */,
 				67B0653929214BE50094A3A0 /* Flip.h */,
 				67C35CBE2956B961006B57ED /* particle.h */,
 				67AEACE0293C9573007590E2 /* functions.h */,

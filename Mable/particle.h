@@ -9,23 +9,24 @@
 #define particle_h
 
 struct particle{
-    Eigen::Vector2d PIC_velocity;
-    Eigen::Vector2d FLIP_velocity;
-    Eigen::Vector2d velocity;
-    Eigen::Vector2d fixVector;
-    Eigen::Vector2d fixVelocity;
-    Eigen::Vector2d position;
-    std::pair<int,int>gridIndex = std::make_pair(-1, -1);
-    particle(Eigen::Vector2d v,Eigen::Vector2d p){
-        Eigen::Vector2d zero = {0,0};
+    Eigen::Vector3d PIC_velocity;
+    Eigen::Vector3d FLIP_velocity;
+    Eigen::Vector3d velocity;
+    Eigen::Vector3d fixVector;
+    Eigen::Vector3d fixVelocity;
+    Eigen::Vector3d position;
+    std::vector<int> gridIndex {-1, -1, -1};
+    particle(Eigen::Vector3d &v,Eigen::Vector3d &p){
+        Eigen::Vector3d zero = {0,0,0};
         velocity = v;
         PIC_velocity = zero;
         FLIP_velocity = zero;
         position = p;
     }
-    void setGridIndex(int x,int y){
-        gridIndex.first = x;
-        gridIndex.second = y;
+    void setGridIndex(int x,int y,int z){
+        gridIndex[0] = x;
+        gridIndex[1] = y;
+        gridIndex[2] = z;
     }
 };
 
