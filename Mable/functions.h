@@ -33,7 +33,7 @@ double sharp_kernel(double x){
     else return (3/4 - fabs(x))*(3/4 - fabs(x))/2;
 }
 double weightFunction(Eigen::Vector3d &px,Eigen::Vector3d &gx,double dx){
-    double w = kernelFunction((px.x()-gx.x())/dx)*kernelFunction((px.y()-gx.y())/dx)*kernelFunction((px.z()-gx.z())/dx);;
+    double w = kernelFunction((px.x()-gx.x())/dx)*kernelFunction((px.y()-gx.y())/dx)*kernelFunction((px.z()-gx.z())/dx);
     return w;
 }
 double smoothFunction(Eigen::Vector3d r,double dx){//dxは粒子半径

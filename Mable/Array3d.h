@@ -53,5 +53,12 @@ struct myArray3d{
             }
         }
     }
+    void print(){
+        for(int i=0;i<nx;i++){
+            for(int j=0;j<ny;j++){
+                for(int k=0;k<nz;k++)std::cout << value[i][j][k] << ",";
+            }std::cout << std::endl;
+        }std::cout << std::endl;
+    }
 };
 #endif /* Array3d_h */

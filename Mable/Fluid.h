@@ -23,9 +23,9 @@
 #include <Eigen/IterativeLinearSolvers>
 #include <iostream>
 #include "Array3d.h"
-#define Nx 16
-#define Ny 16
-#define Nz 16//グリッドの数
+#define Nx 8
+#define Ny 8
+#define Nz 8//グリッドの数
 #define g0 9.8
 using ScalarType = double;
 using IndexType = int64_t;
@@ -38,17 +38,20 @@ struct Fluid{
     double rho;
     myArray3d u = myArray3d(Nx+1,Ny,Nz,0);//水平
     myArray3d old_u = myArray3d(Nx+1,Ny,Nz,0);//水平
-    myArray3d v = myArray3d(Nx,Ny+1,Nz,0);;//鉛直
-    myArray3d old_v = myArray3d(Nx,Ny+1,Nz,0);;//水平
-    myArray3d w = myArray3d(Nx,Ny,Nz+1,0);;
-    myArray3d old_w = myArray3d(Nx,Ny,Nz+1,0);;
-    myArray3d p = myArray3d(Nx,Ny,Nz,0);;//圧力
     myArray3d umi = myArray3d(Nx+1,Ny,Nz,0);//Gridの重さ
-    myArray3d vmi = myArray3d(Nx,Ny+1,Nz,0);;//Gridの重さ
-    myArray3d wmi = myArray3d(Nx,Ny,Nz+1,0);;//Gridの重さ
     myArray3d ufi = myArray3d(Nx+1,Ny,Nz,0);//Gridに加わる外力
-    myArray3d vfi = myArray3d(Nx,Ny+1,Nz,0);;//Gridに加わる外力
-    myArray3d wfi = myArray3d(Nx,Ny,Nz+1,0);;//Gridに加わる外力
+    
+    myArray3d v = myArray3d(Nx,Ny+1,Nz,0);//鉛直
+    myArray3d old_v = myArray3d(Nx,Ny+1,Nz,0);//水平
+    myArray3d vmi = myArray3d(Nx,Ny+1,Nz,0);//Gridの重さ
+    myArray3d vfi = myArray3d(Nx,Ny+1,Nz,0);//Gridに加わる外力
+    
+    myArray3d w = myArray3d(Nx,Ny,Nz+1,0);
+    myArray3d old_w = myArray3d(Nx,Ny,Nz+1,0);
+    myArray3d wmi = myArray3d(Nx,Ny,Nz+1,0);//Gridの重さ
+    myArray3d wfi = myArray3d(Nx,Ny,Nz+1,0);//Gridに加わる外力
+    
+    myArray3d p = myArray3d(Nx,Ny,Nz,0);//圧力
     std::vector<double> weights;//粒子の重み
     double L;
     Eigen::Vector3d f0 = {0.0,-g0,0.0};
@@ -74,18 +77,20 @@ struct Fluid{
     }
     std::vector<int>DirichletBoundaryCondition(int i,int j,int k,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
         std::vector<int>ret(6,1);
-        if(i == 0)ret[2] = 0;
-        else if(map.find({i-1,j,k}) == map.end())ret[2] = 0;
         if(i == Nx-1)ret[0] = 0;
         else if(map.find({i+1,j,k}) == map.end())ret[0] = 0;
-        if(j == 0)ret[3] = 0;
-        else if(map.find({i,j-1,k}) == map.end())ret[3] = 0;
         if(j == Ny-1)ret[1] = 0;
         else if(map.find({i,j+1,k}) == map.end())ret[1] = 0;
+
+        if(i == 0)ret[2] = 0;
+        else if(map.find({i-1,j,k}) == map.end())ret[2] = 0;
+        if(j == 0)ret[3] = 0;
+        else if(map.find({i,j-1,k}) == map.end())ret[3] = 0;
+        
         if(k == 0)ret[4] = 0;
-        else if(map.find({i,j,k+1}) == map.end())ret[4] = 0;
-        if(k == Ny-1)ret[5] = 0;
-        else if(map.find({i,j,k-1}) == map.end())ret[5] = 0;
+        else if(map.find({i,j,k-1}) == map.end())ret[4] = 0;
+        if(k == Nz-1)ret[5] = 0;
+        else if(map.find({i,j,k+1}) == map.end())ret[5] = 0;
         return ret;
     }
     void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
@@ -102,18 +107,28 @@ struct Fluid{
                         p.value[i][j][k] = 0;
                         continue;
                     }
-                    double scale = dt/(rho*dx*dx*dx);
+                    double scale = dt/(rho*dx*dx);
                     //std::cout << i << "," << j << std::endl;
                     double D[6] = {1.0,1.0,-1.0,-1.0,-1.0,1.0};//周囲6方向に向かって働く、圧力の向き
                     //double F[4] = {(double)(i<Nx-1),(double)(j<Ny-1),(double)(i>0),(double)(j>0)};//境界条件。壁なら0,流体なら1
-                    std::vector<int> F = DirichletBoundaryCondition(i,j,k,map);
-                    F = {i<Nx-1,j<Ny-1,i>0,j>0,k>0,k<Nz-1};
-                    double U[6] = {u.value[i+1][j][k],v.value[i][j+1][k],u.value[i][j][k],v.value[i][j][k],w.value[i][j][k],w.value[i][j][k+1]};
+                    
+                    std::vector<int> F_pri = {i<Nx-1,j<Ny-1,i>0,j>0,k>0,k<Nz-1};
+                    double U[6] = {
+                        u.value[i+1][j][k],
+                        v.value[i][j+1][k],
+                        u.value[i][j][k],
+                        v.value[i][j][k],
+                        w.value[i][j][k],
+                        w.value[i][j][k+1]};
                     double sumP = 0;
                     for(int n=0;n<6;n++){
-                        sumP += -F[n]*scale;
-                        b(i*Nx+j*Ny+k) += D[n]*F[n]*U[n]/dx;
+                        sumP += -F_pri[n]*scale;
+                        b(i*Nx+j*Ny+k) += D[n]*F_pri[n]*U[n]/(dx);
                     }
+                    std::vector<int> F = DirichletBoundaryCondition(i,j,k,map);
+//                    for(int n=0;n<6;n++){
+//                        std::cout << F_pri[n] << "," << F[n] << std::endl;
+//                    }
                     triplets.emplace_back(i*Nx+j*Ny+k,i*Nx+j*Ny+k, sumP);
                     if(F[0])triplets.emplace_back(i*Nx+j*Ny+k,(i+1)*Nx+j*Ny+k, F[0]*scale);
                     if(F[1])triplets.emplace_back(i*Nx+j*Ny+k,i*Nx+(j+1)*Ny+k, F[1]*scale);
@@ -135,6 +150,7 @@ struct Fluid{
                 for(int k=0;k<Nz;k++)p.value[i][j][k] = px(i*Nx+j*Ny+k);
             }
         }
+        //p.print();
         for(int i=1; i<Nx;i++){
             for(int j=0;j<Ny;j++){
                 for(int k=0;k<Nz;k++)u.value[i][j][k] = u.value[i][j][k] - dt/rho * (p.value[i][j][k]-p.value[i-1][j][k])/dx;
@@ -146,8 +162,8 @@ struct Fluid{
             }
         }
         for(int i=0;i<Nx;i++){
-            for(int j=1;j<Ny;j++){
-                for(int k=1;k<Nz;k++)w.value[i][j][k] = w.value[i][j][k] - dt/rho * (p.value[i][j][k]-p.value[i][j-1][k-1])/dx;
+            for(int j=0;j<Ny;j++){
+                for(int k=1;k<Nz;k++)w.value[i][j][k] = w.value[i][j][k] - dt/rho * (p.value[i][j][k]-p.value[i][j][k-1])/dx;
             }
         }
     }

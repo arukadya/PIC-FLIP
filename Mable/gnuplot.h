@@ -7,11 +7,16 @@
 
 #ifndef gnuplot_h
 #define gnuplot_h
+#include "Array3d.h"
 #include "particle.h"
-void outputPLT_P(int nx,int ny,double dx,const char* OutputFileName,std::vector<std::vector<double>>&p){
+void outputPLT_P(int nx,int ny,int nz,double dx,const char* OutputFileName,myArray3d &p){
     FILE *ofp = fopen(OutputFileName,"w");
-    for(int i=0;i<nx;i++)for(int j=0;j<ny;j++){
-        fprintf(ofp,"%d %d %lf\n",i,j,p[i][j]);
+    for(int i=0;i<nx;i++){
+        for(int j=0;j<ny;j++){
+            for(int k=0;k<nz;k++){
+                fprintf(ofp,"%d %d %d %lf\n",i,j,k,p.value[i][j][k]);
+            }
+        }
     }
     fclose(ofp);
 }
