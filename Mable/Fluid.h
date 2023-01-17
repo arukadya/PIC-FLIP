@@ -104,6 +104,7 @@ struct Fluid{
                 for(int k=0;k<Nz;k++){
                     std::vector<int>key = {i,j,k};
                     if(map.find(key) == map.end()){
+                        //std::cout << key[0] << "," << key[1] << "," << key[2] << std::endl;
                         p.value[i][j][k] = 0;
                         continue;
                     }
@@ -123,21 +124,20 @@ struct Fluid{
                     double sumP = 0;
                     for(int n=0;n<6;n++){
                         sumP += -F_pri[n]*scale;
-                        b(i*Nx+j*Ny+k) += D[n]*F_pri[n]*U[n]/(dx);
+                        b(i+j*Nx+k*Nx*Ny) += D[n]*F_pri[n]*U[n]/(dx);
                     }
                     std::vector<int> F = DirichletBoundaryCondition(i,j,k,map);
 //                    for(int n=0;n<6;n++){
 //                        std::cout << F_pri[n] << "," << F[n] << std::endl;
 //                    }
-                    triplets.emplace_back(i*Nx+j*Ny+k,i*Nx+j*Ny+k, sumP);
-                    if(F[0])triplets.emplace_back(i*Nx+j*Ny+k,(i+1)*Nx+j*Ny+k, F[0]*scale);
-                    if(F[1])triplets.emplace_back(i*Nx+j*Ny+k,i*Nx+(j+1)*Ny+k, F[1]*scale);
-                    if(F[2])triplets.emplace_back(i*Nx+j*Ny+k,(i-1)*Nx+j*Ny+k, F[2]*scale);
-                    if(F[3])triplets.emplace_back(i*Nx+j*Ny+k,i*Nx+(j-1)*Ny+k, F[3]*scale);
-                    if(F[4])triplets.emplace_back(i*Nx+j*Ny+k,i*Nx+j*Ny+(k-1), F[4]*scale);
-                    if(F[5])triplets.emplace_back(i*Nx+j*Ny+k,i*Nx+j*Ny+(k+1), F[5]*scale);
+                    triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+k*Nx*Ny, sumP);
+                    if(F[0])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+1+j*Nx+k*Nx*Ny, F[0]*scale);
+                    if(F[1])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+(j+1)*Nx+k*Nx*Ny, F[1]*scale);
+                    if(F[2])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i-1+j*Nx+k*Nx*Ny, F[2]*scale);
+                    if(F[3])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+(j-1)*Nx+k*Nx*Ny, F[3]*scale);
+                    if(F[4])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+(k-1)*Nx*Ny, F[4]*scale);
+                    if(F[5])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+(k+1)*Nx*Ny, F[5]*scale);
                 }
-                
             }
         }
         A.setFromTriplets(triplets.begin(), triplets.end());
@@ -147,7 +147,7 @@ struct Fluid{
         px = solver.solve(b);
         for(int i=0;i<Nx;i++){
             for(int j=0;j<Ny;j++){
-                for(int k=0;k<Nz;k++)p.value[i][j][k] = px(i*Nx+j*Ny+k);
+                for(int k=0;k<Nz;k++)p.value[i][j][k] = px(i+j*Nx+k*Nx*Ny);
             }
         }
         //p.print();

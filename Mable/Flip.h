@@ -10,7 +10,7 @@
 #include "functions.h"
 #include "particle.h"
 #define repeatCount 10000
-#define alpha 0
+#define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
 #define gamma 1
@@ -97,7 +97,8 @@ struct PIC_FLIP : Fluid{
         for(unsigned int i=0;i<Nx;i++){
             for(unsigned int j=0;j<Ny;j++){
                 for(unsigned int k=0;k<Nz;k++){
-                    if((i>Nx/4 && i < Nx/4 * 3) && (j > Ny/4) && ((k > Nz/4 && k < Nz/4*3))){
+//                    if((i>Nx/4 && i < Nx/4 * 3) && (j > Ny/4) && ((k > Nz/4 && k < Nz/4*3))){
+                    if((i<Nx/2) && (j < Ny/2) && (k < Nz/2)){
                         Eigen::Vector3d v0 = {0.0,0.0,0.0};
                         std::vector<Eigen::Vector3d>pos(8);//1グリッドにn^2個置くのが流儀らしい
                         pos[0] = Eigen::Vector3d{(i+0.25)*dx,(j+0.25)*dx,(k+0.25)*dx};
