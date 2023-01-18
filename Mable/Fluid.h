@@ -23,9 +23,9 @@
 #include <Eigen/IterativeLinearSolvers>
 #include <iostream>
 #include "Array3d.h"
-#define Nx 8
-#define Ny 8
-#define Nz 8//グリッドの数
+#define Nx 32
+#define Ny 32
+#define Nz 32//グリッドの数
 #define g0 9.8
 using ScalarType = double;
 using IndexType = int64_t;

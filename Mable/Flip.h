@@ -9,7 +9,7 @@
 #include "gnuplot.h"
 #include "functions.h"
 #include "particle.h"
-#define repeatCount 10000
+#define repeatCount 1000
 #define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
