@@ -93,7 +93,8 @@ struct Fluid{
             for(int j=0;j<Ny;j++){
                 std::vector<int>key = {i,j};
                 if(map.find(key) == map.end()){
-                    p[i][j] = 0;
+                    triplets.emplace_back(i*Nx+j,i*Nx+j, 1);
+                    //p[i][j] = 0;
                     continue;
                 }
                 double scale = dt/(rho*dx*dx);
@@ -107,7 +108,7 @@ struct Fluid{
                     sumP += -F[n]*scale;
                     b(i*Nx+j) += D[n]*F[n]*U[n]/dx;
                 }
-                F = DirichletBoundaryCondition(i,j,map);
+                //F = DirichletBoundaryCondition(i,j,map);
                 triplets.emplace_back(i*Nx+j,i*Nx+j, sumP);
                 if(F[0])triplets.emplace_back(i*Nx+j,(i+1)*Nx+j, F[0]*scale);
                 if(F[1])triplets.emplace_back(i*Nx+j,i*Nx+j+1, F[1]*scale);
