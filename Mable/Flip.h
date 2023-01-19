@@ -9,8 +9,8 @@
 #include "gnuplot.h"
 #include "functions.h"
 #include "particle.h"
-#define repeatCount 1000
-#define alpha 1
+#define repeatCount 2
+#define alpha 0
 //#define mp  //粒子の重さ
 //#define radius 0.0025
 #define gamma 1
@@ -98,7 +98,7 @@ struct PIC_FLIP : Fluid{
             for(unsigned int j=0;j<Ny;j++){
                 for(unsigned int k=0;k<Nz;k++){
 //                    if((i>Nx/4 && i < Nx/4 * 3) && (j > Ny/4) && ((k > Nz/4 && k < Nz/4*3))){
-                    if((i<Nx/2) && (j < Ny/2) && (k < Nz/2)){
+                    if((i<Nx/2) && (j >= Ny/2) && (k < Nz/2)){
                         Eigen::Vector3d v0 = {0.0,0.0,0.0};
                         std::vector<Eigen::Vector3d>pos(8);//1グリッドにn^2個置くのが流儀らしい
                         pos[0] = Eigen::Vector3d{(i+0.25)*dx,(j+0.25)*dx,(k+0.25)*dx};
@@ -168,18 +168,18 @@ struct PIC_FLIP : Fluid{
         for(unsigned int i=0;i<Nx;i++){
             for(unsigned int j=0;j<Ny+1;j++){
                 for(unsigned int k=0;k<Nz;k++){
-                vmi.value[i][j][k] = 0;
-                old_v.value[i][j][k] = 0;
-                v.value[i][j][k] = 0;
+                    vmi.value[i][j][k] = 0;
+                    old_v.value[i][j][k] = 0;
+                    v.value[i][j][k] = 0;
                 }
             }
         }
         for(unsigned int i=0;i<Nx;i++){
             for(unsigned int j=0;j<Ny;j++){
                 for(unsigned int k=0;k<Nz+1;k++){
-                wmi.value[i][j][k] = 0;
-                old_w.value[i][j][k] = 0;
-                w.value[i][j][k] = 0;
+                    wmi.value[i][j][k] = 0;
+                    old_w.value[i][j][k] = 0;
+                    w.value[i][j][k] = 0;
                 }
             }
         }
