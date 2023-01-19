@@ -23,9 +23,9 @@
 #include <Eigen/IterativeLinearSolvers>
 #include <iostream>
 #include "Array3d.h"
-#define Nx 4
-#define Ny 4
-#define Nz 4//グリッドの数
+#define Nx 16
+#define Ny 16
+#define Nz 16//グリッドの数
 #define g0 9.8
 using ScalarType = double;
 using IndexType = int64_t;
@@ -134,7 +134,7 @@ struct Fluid{
         }
         A.setFromTriplets(triplets.begin(), triplets.end());
 //        Eigen::ConjugateGradient<SparseMatrix> solver;
-        std::cout << A << std::endl;
+//        std::cout << A << std::endl;
         Eigen::BiCGSTAB<SparseMatrix> solver;
         solver.compute(A);
         px = solver.solve(b);

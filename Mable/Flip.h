@@ -9,8 +9,8 @@
 #include "gnuplot.h"
 #include "functions.h"
 #include "particle.h"
-#define repeatCount 2
-#define alpha 0
+#define repeatCount 5000
+#define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
 #define gamma 1
@@ -25,7 +25,7 @@ struct PIC_FLIP : Fluid{
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>map;//ハッシュテーブル
     std::vector<Eigen::Vector3d> vertices;//出力メッシュの頂点
     timeDisplayer TD;
-    double radius = dx/2;
+    double radius = dx*3;
     double mp = pow(radius,3)/3*4*3.14;
     void execute(){
         int cnt = 0;

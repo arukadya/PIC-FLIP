@@ -32,6 +32,7 @@
 		67B0653829214A7C0094A3A0 /* Fluid.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Fluid.h; sourceTree = "<group>"; };
 		67B0653929214BE50094A3A0 /* Flip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flip.h; sourceTree = "<group>"; };
 		67B340E22946F28000A35561 /* gnuplot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gnuplot.h; sourceTree = "<group>"; };
+		67BB3FFA2979180C005FD109 /* watersurface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = watersurface.h; sourceTree = "<group>"; };
 		67C35CBD294E06B5006B57ED /* Hasher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hasher.h; sourceTree = "<group>"; };
 		67C35CBE2956B961006B57ED /* particle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = particle.h; sourceTree = "<group>"; };
 		67D7496229727F1B0010E44E /* Bthesis_main.log */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bthesis_main.log; sourceTree = "<group>"; };
@@ -84,6 +85,7 @@
 				67B0653829214A7C0094A3A0 /* Fluid.h */,
 				67D749702975445D0010E44E /* Array3d.h */,
 				67B0653929214BE50094A3A0 /* Flip.h */,
+				67BB3FFA2979180C005FD109 /* watersurface.h */,
 				67C35CBE2956B961006B57ED /* particle.h */,
 				67AEACE0293C9573007590E2 /* functions.h */,
 				67C35CBD294E06B5006B57ED /* Hasher.h */,
