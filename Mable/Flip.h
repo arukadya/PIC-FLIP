@@ -9,6 +9,7 @@
 #include "gnuplot.h"
 #include "functions.h"
 #include "particle.h"
+#include "watersurface.h"
 #define repeatCount 5000
 #define alpha 1
 //#define mp  //粒子の重さ
@@ -25,7 +26,7 @@ struct PIC_FLIP : Fluid{
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>map;//ハッシュテーブル
     std::vector<Eigen::Vector3d> vertices;//出力メッシュの頂点
     timeDisplayer TD;
-    double radius = dx*3;
+    double radius = dx*2;
     double mp = pow(radius,3)/3*4*3.14;
     void execute(){
         int cnt = 0;
@@ -98,7 +99,7 @@ struct PIC_FLIP : Fluid{
             for(unsigned int j=0;j<Ny;j++){
                 for(unsigned int k=0;k<Nz;k++){
 //                    if((i>Nx/4 && i < Nx/4 * 3) && (j > Ny/4) && ((k > Nz/4 && k < Nz/4*3))){
-                    if((i<Nx/2) && (j >= Ny/2) && (k < Nz/2)){
+                    if((i>Nx/2) && (k > Nz/2)){
                         Eigen::Vector3d v0 = {0.0,0.0,0.0};
                         std::vector<Eigen::Vector3d>pos(8);//1グリッドにn^2個置くのが流儀らしい
                         pos[0] = Eigen::Vector3d{(i+0.25)*dx,(j+0.25)*dx,(k+0.25)*dx};
@@ -430,69 +431,6 @@ struct PIC_FLIP : Fluid{
 //            std::cout << p.PIC_velocity << std::endl;
 //        }
     }
-//    void FLIPgridVelocityToParticles(){
-////-----------------------速度の初期化は不要-----------------------------------------------
-//        for(auto &p:particles){
-//            p.FLIP_velocity = {0,0};
-//            p.FLIP_velocity = p.velocity;
-//        }
-//        for(int i=1;i<Nx+1;i++){
-//            for(int j=0;j<Ny;j++){
-//                //std::cout << u[i][j]-old_u[i][j] << ",";
-//                std::vector<Eigen::Vector2d>gx_list = {{(i-1)*dx,(j+0.5)*dx},{(i)*dx,(j+0.5)*dx}};
-//                std::vector<std::vector<int>>key_list = {{i-1,j},{i,j}};
-//                if(extend){
-//                    if(i != 1){
-//                        gx_list.insert(gx_list.begin(),{(i-2)*dx,(j+0.5)*dx});
-//                        key_list.insert(key_list.begin(),{i-2,j});
-//                    }
-//                    if(i != Nx){
-//                        gx_list.push_back({(i+1)*dx,(j+0.5)*dx});
-//                        key_list.push_back({i+1,j});
-//                    }
-//                }
-//                for(int k=0;k<gx_list.size();k++){
-//                    if(map.find(key_list[k]) != map.end()){
-//                        auto val = map.at(key_list[k]);
-//                        for(auto x:val){
-//                            Eigen::Vector2d px = particles[x].position;
-//                            double weight = weightFunction(px, gx_list[k], dx);
-//    //                        if(i == 1)particles[x].FLIP_velocity.x()+= weight*mp*delta_u[i-1+k][j];
-//    //                        else particles[x].FLIP_velocity.x()+= weight*mp*delta_u[i-2+k][j];
-//                            if(i == 1)particles[x].FLIP_velocity.x()+= weight*mp*(u[i-1+k][j]-old_u[i-1+k][j]);
-//                            else particles[x].FLIP_velocity.x()+= weight*mp*(u[i-2+k][j]-old_u[i-2+k][j]);
-//                        }
-//                    }
-//                }
-//            }
-//            //std::cout << std::endl;
-//        }
-//        for(int i=0;i<Nx;i++)for(int j=1;j<Ny+1;j++){
-//            std::vector<Eigen::Vector2d>gx_list = {{(i+0.5)*dx,(j)*dx},{(i+0.5)*dx,(j)*dx}};
-//            std::vector<std::vector<int>>key_list = {{i,j-1},{i,j}};
-//            if(extend){
-//                if(j != 1){
-//                    gx_list.insert(gx_list.begin(),{(i+0.5)*dx,(j-2)*dx});
-//                    key_list.insert(key_list.begin(),{i,j-2});
-//                }
-//                if(j != Ny){
-//                    gx_list.push_back({(i+0.5)*dx,(j+1)*dx});
-//                    key_list.push_back({i,j+1});
-//                }
-//            }
-//            for(int k=0;k<gx_list.size();k++){
-//                if(map.find(key_list[k]) != map.end()){
-//                    auto val = map.at(key_list[k]);
-//                    for(auto x:val){
-//                        Eigen::Vector2d px = particles[x].position;
-//                        double weight = weightFunction(px, gx_list[k], dx);
-//                        if(j == 1)particles[x].FLIP_velocity.y()+= weight*mp*(v[i][j-1+k]-old_v[i][j-1+k]);
-//                        else particles[x].FLIP_velocity.y()+= weight*mp*(v[i][j-2+k]-old_v[i][j-2+k]);
-//                    }
-//                }
-//            }
-//        }
-//    }
     void advectParticles(){
         //std::cout << L << std::endl;
         for(int i=0;i<particles.size();i++){

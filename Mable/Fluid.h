@@ -53,7 +53,6 @@ struct Fluid{
     
     myArray3d p = myArray3d(Nx,Ny,Nz,0);//圧力
     std::vector<double> weights;//粒子の重み
-    //std::vector<std::vector<int>> keys;
     double L;
     Eigen::Vector3d f0 = {0.0,-g0,0.0};
     Fluid(double x,double t,double density){
@@ -63,28 +62,30 @@ struct Fluid{
         L = dx*Nx;
         vfi.reset(f0.y());
     }
-//    std::vector<int>DirichletBoundaryCondition(int i,int j,int k,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
-//        std::vector<int>ret(6,1);
-//        if(i == Nx-1)ret[0] = 0;
-//        else if(map.find({i+1,j,k}) == map.end())ret[0] = 0;
-//        if(j == Ny-1)ret[1] = 0;
-//        else if(map.find({i,j+1,k}) == map.end())ret[1] = 0;
-//
-//        if(i == 0)ret[2] = 0;
-//        else if(map.find({i-1,j,k}) == map.end())ret[2] = 0;
-//        if(j == 0)ret[3] = 0;
-//        else if(map.find({i,j-1,k}) == map.end())ret[3] = 0;
-//
-//        if(k == 0)ret[4] = 0;
-//        else if(map.find({i,j,k-1}) == map.end())ret[4] = 0;
-//        if(k == Nz-1)ret[5] = 0;
-//        else if(map.find({i,j,k+1}) == map.end())ret[5] = 0;
-//        return ret;
-//    }
+    std::vector<int>DirichletBoundaryCondition(int i,int j,int k,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
+        std::vector<int>ret(6,1);
+        if(i == Nx-1)ret[0] = 0;
+        else if(map.find({i+1,j,k}) == map.end())ret[0] = 0;
+        if(j == Ny-1)ret[1] = 0;
+        else if(map.find({i,j+1,k}) == map.end())ret[1] = 0;
+
+        if(i == 0)ret[2] = 0;
+        else if(map.find({i-1,j,k}) == map.end())ret[2] = 0;
+        if(j == 0)ret[3] = 0;
+        else if(map.find({i,j-1,k}) == map.end())ret[3] = 0;
+
+        if(k == 0)ret[4] = 0;
+        else if(map.find({i,j,k-1}) == map.end())ret[4] = 0;
+        if(k == Nz-1)ret[5] = 0;
+        else if(map.find({i,j,k+1}) == map.end())ret[5] = 0;
+        return ret;
+    }
     void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
-        SparseMatrix A(Nx*Ny*Nz,Nx*Ny*Nz);
+        SparseMatrix A(Nx*Ny*Nz,Nx*Ny*Nz),B(Nx*Ny*Nz,Nx*Ny*Nz);
         Eigen::VectorXd b = Eigen::VectorXd::Zero(Nx*Ny*Nz);
         Eigen::VectorXd px;
+        std::set<int> DirichletKey;
+        std::vector<std::vector<int>>keys;
         //Tripletの計算
         std::vector<Triplet> triplets;
         for(int i=0;i<Nx;i++){
@@ -92,12 +93,11 @@ struct Fluid{
                 for(int k=0;k<Nz;k++){
                     std::vector<int>key = {i,j,k};
                     if(map.find(key) == map.end()){
-                        
-                        //std::cout << key[0] << "," << key[1] << "," << key[2] << std::endl;
+                        //前処理でAが変更されてしまうので，境界条件として別で無理矢理設定する．
                         triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+k*Nx*Ny,1);
-                        //keys.push_back(key);
+                        keys.push_back(key);
+                        DirichletKey.insert(i+j*Nx+k*Nx*Ny);
                         continue;
-                        std::cout << "error" << std::endl;
                     }
                     double scale = dt/(rho*dx*dx);
                     //std::cout << i << "," << j << std::endl;
@@ -118,7 +118,7 @@ struct Fluid{
                         //sumP += scale;
                         b(i+j*Nx+k*Nx*Ny) += D[n]*F[n]*U[n]/(dx);
                     }
-                    //std::vector<int> F = DirichletBoundaryCondition(i,j,k,map);
+                    F = DirichletBoundaryCondition(i,j,k,map);
 //                    for(int n=0;n<6;n++){
 //                        std::cout << F_pri[n] << "," << F[n] << std::endl;
 //                    }
@@ -133,9 +133,18 @@ struct Fluid{
             }
         }
         A.setFromTriplets(triplets.begin(), triplets.end());
-//        Eigen::ConjugateGradient<SparseMatrix> solver;
-//        std::cout << A << std::endl;
-        Eigen::BiCGSTAB<SparseMatrix> solver;
+        Eigen::ConjugateGradient<SparseMatrix> solver;
+        
+        //Eigen::BiCGSTAB<SparseMatrix> solver;
+        
+        for(int i=0;i<A.outerSize();++i){
+            for(SparseMatrix::InnerIterator it(A,i);it;++it){
+                if(it.row() == *DirichletKey.begin()){
+                    it.valueRef() = 1;
+                    DirichletKey.erase(DirichletKey.begin());
+                }
+            }
+        }
         solver.compute(A);
         px = solver.solve(b);
         for(int i=0;i<Nx;i++){
@@ -145,7 +154,11 @@ struct Fluid{
                 }
             }
         }
-        //p.print();
+        for(auto x:keys){
+            if(px(x[0] + x[1]*Ny + x[2]*Nz*Nz) > 1.0e-4)std::cout << x[0] + x[1]*Ny + x[2]*Nz*Nz << "," << px(x[0] + x[1]*Ny + x[2]*Nz*Nz) <<std::endl;
+            //else std::cout << "success:" << x[0] + x[1]*Ny + x[2]*Nz*Nz << std::endl;
+        }
+        
         for(int i=1; i<Nx;i++){
             for(int j=0;j<Ny;j++){
                 for(int k=0;k<Nz;k++)u.value[i][j][k] = u.value[i][j][k] - dt/rho * (p.value[i][j][k]-p.value[i-1][j][k])/dx;
