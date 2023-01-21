@@ -30,22 +30,44 @@ myArray3d cal_implicitFunction(std::vector<particle> &particles,std::unordered_m
                     }
                 }
                 implicit_function.value[i][j][k] = func_val;
+                //std::cout << func_val << std::endl;
             }
         }
     }
     return implicit_function;
 }
-void makeSurface(std::vector<particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz,double threshold){
+std::vector<std::vector<double>> makeSurface(std::vector<particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz,double threshold,double th_d){
     myArray3d implicit_function = cal_implicitFunction(particles, map, radius, dx, nx, ny, nz);
-    std::vector<myArray3d> outputMesh;
+    std::vector<std::vector<double>> outputMesh;
     for(int i=0;i<nx;i++){
         for(int j=0;j<ny;j++){
             for(int k=0;k<nz;k++){
-                if(implicit_function.value[i][j][k] > threshold){
-                    //outputMesh.push_back({(i+0.5)*dx,(j+0.5)*dx,(k+0.5)*dx});
+                if(implicit_function.value[i][j][k] < threshold + th_d &&implicit_function.value[i][j][k] > threshold){
+                    outputMesh.push_back({(i+0.5)*dx,(j+0.5)*dx,(k+0.5)*dx});
                 }
             }
         }
     }
+    outputMesh.push_back({(0.5)*dx,(0.5)*dx,(0.5)*dx});
+    outputMesh.push_back({(nx+0.5)*dx,(0.5)*dx,(0.5)*dx});
+    outputMesh.push_back({(nx+0.5)*dx,(0.5)*dx,(nz+0.5)*dx});
+    outputMesh.push_back({(0.5)*dx,(0.5)*dx,(nz+0.5)*dx});
+    return outputMesh;
+}
+std::vector<std::vector<double>> makeSurface_imp(std::vector<particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz){
+    myArray3d implicit_function = cal_implicitFunction(particles, map, radius, dx, nx, ny, nz);
+    std::vector<std::vector<double>> outputMesh;
+    for(int i=0;i<nx;i++){
+        for(int j=0;j<ny;j++){
+            for(int k=0;k<nz;k++){
+                outputMesh.push_back({(i+0.5)*dx,(j+0.5)*dx,(k+0.5)*dx,implicit_function.value[i][j][k]});
+            }
+        }
+    }
+//    outputMesh.push_back({(0.5)*dx,(0.5)*dx,(0.5)*dx});
+//    outputMesh.push_back({(nx+0.5)*dx,(0.5)*dx,(0.5)*dx});
+//    outputMesh.push_back({(nx+0.5)*dx,(0.5)*dx,(nz+0.5)*dx});
+//    outputMesh.push_back({(0.5)*dx,(0.5)*dx,(nz+0.5)*dx});
+    return outputMesh;
 }
 #endif /* watersurface_h */

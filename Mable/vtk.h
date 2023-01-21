@@ -53,3 +53,43 @@ void outputVTK(const char* OutputFileName,std::vector<Eigen::Vector3d> &Vertices
     for(int i=0;i<Vertices.size();i++)fprintf(ofp,"0.5\n");
     fclose(ofp);
 }
+void outputVTK_implicit(const char* OutputFileName,myArray3d &Vertices,double dx){
+    FILE *ofp = fopen(OutputFileName,"w");
+    fprintf(ofp,"# vtk DataFile Version 2.0\n");
+    fprintf(ofp,"Title Data\n");
+    fprintf(ofp,"ASCII\n");
+    fprintf(ofp,"DATASET UNSTRUCTURED_GRID\n");
+    fprintf(ofp,"POINTS %d float\n",(int)Vertices.nx*Vertices.ny*Vertices.nz);
+    for(int i=0;i<Vertices.nx;i++){
+        for(int j=0;j<Vertices.ny;j++){
+            for(int k=0;k<Vertices.nz;k++){
+                fprintf(ofp,"%lf %lf %lf\n",(i+0.5)*dx,(j+0.5)*dx,(k+0.5)*dx);
+            }
+        }
+    }
+    fprintf(ofp,"\n");
+    fprintf(ofp,"CELL_TYPES %d\n",(int)Vertices.nx*Vertices.ny*Vertices.nz);
+    for(int i=0;i<(int)Vertices.nx*Vertices.ny*Vertices.nz;i++)fprintf(ofp,"1\n");
+    fprintf(ofp,"\n");
+    fprintf(ofp,"POINT_DATA %d\n",(int)Vertices.nx*Vertices.ny*Vertices.nz);
+    fprintf(ofp,"SCALARS weight float\n");
+    fprintf(ofp,"LOOKUP_TABLE default\n");
+    for(int i=0;i<Vertices.nx;i++){
+        for(int j=0;j<Vertices.ny;j++){
+            for(int k=0;k<Vertices.nz;k++){
+                fprintf(ofp,"%lf\n",Vertices.value[i][j][k]);
+            }
+        }
+    }
+    fprintf(ofp,"SCALARS radius float\n");
+    fprintf(ofp,"LOOKUP_TABLE default\n");
+    for(int i=0;i<Vertices.nx;i++){
+        for(int j=0;j<Vertices.ny;j++){
+            for(int k=0;k<Vertices.nz;k++){
+                if(Vertices.value[i][j][k] > 1.0e-4)fprintf(ofp,"0.5\n");
+                else fprintf(ofp,"0\n");
+            }
+        }
+    }
+    fclose(ofp);
+}

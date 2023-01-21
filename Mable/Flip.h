@@ -10,7 +10,7 @@
 #include "functions.h"
 #include "particle.h"
 #include "watersurface.h"
-#define repeatCount 5000
+#define repeatCount 1000
 #define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
@@ -19,15 +19,19 @@
 #define Flip_h
 #define timer 2
 #define extend 0
-
+#define threshold 0.9
+#define th_d 0.1
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
     std::vector<particle>particles;//入力メッシュの頂点
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>map;//ハッシュテーブル
     std::vector<Eigen::Vector3d> vertices;//出力メッシュの頂点
+    myArray3d implicit_function = myArray3d(Nx,Ny,Nz,0);
+    std::vector<std::vector<double>> surfaceMesh;
     timeDisplayer TD;
-    double radius = dx*2;
+    double radius = dx/2*3;
     double mp = pow(radius,3)/3*4*3.14;
+    
     void execute(){
         int cnt = 0;
         for(unsigned int i=0;i<repeatCount;i++){
@@ -60,29 +64,28 @@ struct PIC_FLIP : Fluid{
                     TD.endTimer();
                     TD.startTimer("output");
                 }
-                //std::cout << i << std::endl;
                 std::cout << "mapsize = " << map.size() << std::endl;
                 output(vertices);
-                std::string OutputVTK = "outputVTK/output"+std::to_string(cnt)+".vtk";
-                std::ostringstream ssPressure;
-                ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
-                //std::ostringstream ssMap;
-                //ssMap << "outputMap/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
-                //std::ostringstream ssParticles;
-                //ssParticles << "outputParticles/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
-                std::string OutputPressure(ssPressure.str());
-                //std::string OutputMap(ssMap.str());
-                //std::string OutputParticles(ssParticles.str());
-                std::cout << OutputVTK.c_str() << std::endl;
-                outputVTK(OutputVTK.c_str(),vertices);
-                outputPLT_P(Nx, Ny, Nz, dx, OutputPressure.c_str(), p);
-                //outputPLT_M(Nx, Ny,OutputMap.c_str(), map);
-                //outputPLT_particles(OutputParticles.c_str(),particles);
+                surfaceMesh = makeSurface(particles, map, radius, dx, Nx, Ny, Nz, threshold,th_d);
+                implicit_function = cal_implicitFunction(particles, map, radius, dx, Nx, Ny, Nz);
+//                std::string OutputVTK = "outputVTK/output"+std::to_string(cnt)+".vtk";
+                std::string OutputVTK_imp = "outputVTK_imp/output"+std::to_string(cnt)+".vtk";
+//                std::cout << OutputVTK.c_str() << std::endl;
+                outputVTK(OutputVTK_imp.c_str(),vertices);
+                outputVTK_implicit(OutputVTK_imp.c_str(),implicit_function,dx);
+//                std::ostringstream ssPressure;
+//                ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
+//                std::string OutputPressure(ssPressure.str());
+//                outputPLT_P(Nx, Ny, Nz, dx, OutputPressure.c_str(), p);
+                std::ostringstream ssSurface;
+                ssSurface << "outputSurface/output" << std::setw(3) << std::setfill('0') << cnt << ".xyz";
+                std::string OutputSurface(ssSurface.str());
+                outputSurface(OutputSurface.c_str(),surfaceMesh);
                 cnt++;
                 if(timer == 2)TD.endTimer();
             }
         }
-        std::cout << "dx:" << dx << " dt:" << dt << " Nx*Ny:" << Nx*Ny << " repeat:" << repeatCount << std::endl;
+        std::cout << "dx:" << dx << " dt:" << dt << " Nx*Ny*Nz:" << Nx*Ny*Nz << " repeat:" << repeatCount << std::endl;
         std::cout << "alpha:" << alpha << " gamma:" << gamma << " radius:" << radius <<std::endl;
         std::cout << "extend:" << extend << std::endl;
     }

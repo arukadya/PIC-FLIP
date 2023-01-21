@@ -20,6 +20,11 @@ void outputPLT_P(int nx,int ny,int nz,double dx,const char* OutputFileName,myArr
     }
     fclose(ofp);
 }
+void outputSurface(const char* OutputFileName,std::vector<std::vector<double>> &mesh){
+    FILE *ofp = fopen(OutputFileName,"w");
+    for(auto x:mesh)fprintf(ofp,"%lf %lf %lf\n",x[0],x[1],x[2]);
+    fclose(ofp);
+}
 void outputPLT_M(int nx,int ny,const char* OutputFileName,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
     FILE *ofp = fopen(OutputFileName,"w");
     for(int i=0;i<nx;i++)for(int j=0;j<ny;j++){
