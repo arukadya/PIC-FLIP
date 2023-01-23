@@ -70,4 +70,39 @@ std::vector<std::vector<double>> makeSurface_imp(std::vector<particle> &particle
 //    outputMesh.push_back({(0.5)*dx,(0.5)*dx,(nz+0.5)*dx});
     return outputMesh;
 }
+enum {
+    inWater = 0,
+    inAir = 1
+};
+double cal_volume(std::vector<particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz,double threshold,int cnt){
+    myArray3d implicit_function = cal_implicitFunction(particles, map, radius, dx, nx, ny, nz);
+    double sum = 0;
+    for(int i=0;i<nx;i++){
+        for(int k=0;k<nz;k++){
+            bool flg = true;
+            bool cross = false;
+            int c = 0;
+            for(int j=0;j<ny;j++){
+                if(implicit_function.value[i][j][k] < threshold){
+                    //if()
+                    sum += (j+0.5)*dx;
+                    if(cross)c++;
+                    cross = false;
+                    //if(cnt < 2)std::cout << "(" << i <<"," << j << "," << k << ") = " <<implicit_function.value[i][j][k] << std::endl;
+                    //break;
+                }
+                else{
+                    if(!cross)c++;
+                    cross = true;
+                }
+            }
+            //std::cout << "(" << i << "," << k << ") = " << c << std::endl;
+            if(flg){
+                sum += (ny-0.5)*dx;
+                //if(cnt < 2)std::cout << "(" << i <<"," << ny-1 << "," << k << ") = " <<implicit_function.value[i][ny-1][k] << std::endl;
+            }
+        }
+    }
+    return sum;
+}
 #endif /* watersurface_h */

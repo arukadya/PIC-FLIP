@@ -19,7 +19,7 @@
 #define Flip_h
 #define timer 2
 #define extend 0
-#define threshold 0.9
+#define threshold 0.7
 #define th_d 0.1
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
@@ -28,11 +28,11 @@ struct PIC_FLIP : Fluid{
     std::vector<Eigen::Vector3d> vertices;//出力メッシュの頂点
     myArray3d implicit_function = myArray3d(Nx,Ny,Nz,0);
     std::vector<std::vector<double>> surfaceMesh;
+    std::vector<double>volumes;
     timeDisplayer TD;
     double radius = dx/2*3;
     double mp = pow(radius,3)/3*4*3.14;
-    
-    void execute(){
+    void execute(std::string foldername){
         int cnt = 0;
         for(unsigned int i=0;i<repeatCount;i++){
             //std::cout << i << std::endl;
@@ -68,23 +68,21 @@ struct PIC_FLIP : Fluid{
                 output(vertices);
                 surfaceMesh = makeSurface(particles, map, radius, dx, Nx, Ny, Nz, threshold,th_d);
                 implicit_function = cal_implicitFunction(particles, map, radius, dx, Nx, Ny, Nz);
-//                std::string OutputVTK = "outputVTK/output"+std::to_string(cnt)+".vtk";
-                std::string OutputVTK_imp = "outputVTK_imp/output"+std::to_string(cnt)+".vtk";
-//                std::cout << OutputVTK.c_str() << std::endl;
+                std::string OutputVTK_imp = foldername + "/output"+std::to_string(cnt)+".vtk";
                 outputVTK(OutputVTK_imp.c_str(),vertices);
+                
                 outputVTK_implicit(OutputVTK_imp.c_str(),implicit_function,dx);
-//                std::ostringstream ssPressure;
-//                ssPressure << "outputPressure/output" << std::setw(3) << std::setfill('0') << cnt << ".dat";
-//                std::string OutputPressure(ssPressure.str());
-//                outputPLT_P(Nx, Ny, Nz, dx, OutputPressure.c_str(), p);
                 std::ostringstream ssSurface;
                 ssSurface << "outputSurface/output" << std::setw(3) << std::setfill('0') << cnt << ".xyz";
                 std::string OutputSurface(ssSurface.str());
                 outputSurface(OutputSurface.c_str(),surfaceMesh);
+                volumes.push_back(cal_volume(particles, map, radius, dx, Nx, Ny, Nz, threshold,i));
                 cnt++;
                 if(timer == 2)TD.endTimer();
             }
         }
+        std::cout << "finFlip";
+        outputVolume("volumes.dat",volumes);
         std::cout << "dx:" << dx << " dt:" << dt << " Nx*Ny*Nz:" << Nx*Ny*Nz << " repeat:" << repeatCount << std::endl;
         std::cout << "alpha:" << alpha << " gamma:" << gamma << " radius:" << radius <<std::endl;
         std::cout << "extend:" << extend << std::endl;
@@ -93,9 +91,10 @@ struct PIC_FLIP : Fluid{
         v.resize(particles.size());
         for(int i=0;i<v.size();i++)v[i] = particles[i].position;
     }
-    PIC_FLIP(double x,double t,double density):Fluid(x,t,density){
+    PIC_FLIP(double x,double t,double density,double r):Fluid(x,t,density){
         division = {Nx,Ny,Nz};
         initParticles();
+        radius = r;
     }
     void initParticles(){
         for(unsigned int i=0;i<Nx;i++){
