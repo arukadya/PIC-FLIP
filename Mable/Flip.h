@@ -19,7 +19,7 @@
 #define Flip_h
 #define timer 2
 #define extend 0
-#define threshold 0.7
+#define threshold 0.95
 #define th_d 0.1
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...

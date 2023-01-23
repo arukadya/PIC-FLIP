@@ -225,7 +225,11 @@ File: l3backend-dvips.def 2022-02-07 L3 backend support: dvips
 \g__pdf_backend_link_int=\count288
 \g__pdf_backend_link_sf_int=\count289
 )
-(./Bthesis_main.aux)
+(./Bthesis_main.aux
+
+LaTeX Warning: Label `eq:discretized_pressure' multiply defined.
+
+)
 \openout1 = `Bthesis_main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
@@ -296,55 +300,43 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 第 3 章
 [3
 
-] [4] [5]
-File: 3dstaggerd.png Graphic file (type bmp)
-<3dstaggerd.png>
+] [4]
+File: staggerd.png Graphic file (type bmp)
+<staggerd.png>
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <10.95> not available
-(Font)              Font shape `JT1/gt/m/n' tried instead on input line 198.
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 194.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <10.95> not available
-(Font)              Font shape `JY1/gt/m/n' tried instead on input line 198.
- [6]
-File: pressure_model.png Graphic file (type bmp)
-<pressure_model.png>
- [7]
-Overfull \hbox (6.89273pt too wide) in paragraph at lines 234--235
-[]$\OMS/cmsy/m/n/12 r\OML/cmm/b/it/12 p[]$ \JY1/mc/m/n/12 割り振られた方向の圧
-力勾配\OT1/cmr/m/n/12 . \JY1/mc/m/n/12 前方差分によ っ て ， $\OMS/cmsy/m/n/12 
-r\OML/cmm/b/it/12 p[]\JY1/mc/m/n/12 （\OML/cmm/b/it/12 x\OML/cmm/m/it/12 ; t\JY
-1/mc/m/n/12 ） \OT1/cmr/m/n/12 = []$
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 194.
+ [5] [6]
+Overfull \hbox (24.54001pt too wide) in paragraph at lines 221--222
+[]\JY1/mc/m/n/12 圧力を計算する格子の添字を $\OT1/cmr/m/n/12 (\OML/cmm/m/it/12 
+i; j; k\OT1/cmr/m/n/12 )$ \JY1/mc/m/n/12 とし ， 圧力の微分に前方差分 $\OMS/cms
+y/m/n/12 r\OML/cmm/b/it/12 p[]\OT1/cmr/m/n/12 (\OML/cmm/b/it/12 x\OML/cmm/m/it/
+12 ; t\OT1/cmr/m/n/12 ) = []$
  []
 
-[8] [9] [10]
-File: exp_simbol.png Graphic file (type bmp)
-<exp_simbol.png>
- [11] [12] [13] [14] [15]
-第 4 章
-[16
+[7] [8] [9] [10] [11]
+./Bthesis_main.tex:333: Undefined control sequence.
+l.333 ...fixparticlepos}で述べたように，流体の\UTF
+                                                  {2022}\UTF{2022}非圧縮性条...
 
-] [17] [18] [19]
-第 5 章
+? 
+./Bthesis_main.tex:333: Emergency stop.
+l.333 
+      
+End of file on the terminal!
 
-LaTeX Warning: Citation `kusano' on page 20 undefined on input line 444.
-
-LaTeX Font Info:    Kanji font shape `JY1/gt/m/it' undefined
-(Font)              No change on input line 446.
-[20
-
-]
-LaTeX Font Info:    Kanji font shape `JY1/gt/m/it' undefined
-(Font)              No change on input line 463.
- [21]
-第 6 章
-LaTeX Font Info:    Kanji font shape `JY1/gt/m/it' undefined
-(Font)              No change on input line 472.
-[22
-
-] [23
-
-]
-LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 493.
-LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+ 
+Here is how much of TeX's memory you used:
+ 4626 strings out of 478724
+ 75832 string characters out of 5858391
+ 374072 words of memory out of 5000000
+ 23020 multiletter control sequences out of 15000+600000
+ 488106 words of font info for 101 fonts, out of 8000000 for 9000
+ 929 hyphenation exceptions out of 8191
+ 55i,8n,63p,1060b,579s stack positions out of 10000i,1000n,20000p,200000b,200000s
+Output written on Bthesis_main.dvi (14 pages, 45792 bytes).
+ned
 (Font)              No change on input line 496.
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
 (Font)              No change on input line 500.
