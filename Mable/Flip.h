@@ -10,16 +10,16 @@
 #include "functions.h"
 #include "particle.h"
 #include "watersurface.h"
-#define repeatCount 1000
+#define repeatCount 2000
 #define alpha 1
 //#define mp  //粒子の重さ
 //#define radius 0.0025
-#define gamma 1
+//#define gamma 1
 #ifndef Flip_h
 #define Flip_h
-#define timer 2
+#define timer 0
 #define extend 0
-#define threshold 0.95
+//#define threshold 0.95
 #define th_d 0.1
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
@@ -32,7 +32,9 @@ struct PIC_FLIP : Fluid{
     timeDisplayer TD;
     double radius = dx/2*3;
     double mp = pow(radius,3)/3*4*3.14;
-    void execute(std::string foldername){
+    double gamma = 1;
+    double threshold = 1;
+    void execute(std::string foldername,std::string filename){
         int cnt = 0;
         for(unsigned int i=0;i<repeatCount;i++){
             //std::cout << i << std::endl;
@@ -64,37 +66,39 @@ struct PIC_FLIP : Fluid{
                     TD.endTimer();
                     TD.startTimer("output");
                 }
-                std::cout << "mapsize = " << map.size() << std::endl;
+                //std::cout << "mapsize = " << map.size() << std::endl;
                 output(vertices);
-                surfaceMesh = makeSurface(particles, map, radius, dx, Nx, Ny, Nz, threshold,th_d);
+                //surfaceMesh = makeSurface(particles, map, radius, dx, Nx, Ny, Nz, threshold,th_d);
                 implicit_function = cal_implicitFunction(particles, map, radius, dx, Nx, Ny, Nz);
                 std::string OutputVTK_imp = foldername + "/output"+std::to_string(cnt)+".vtk";
                 outputVTK(OutputVTK_imp.c_str(),vertices);
                 
                 outputVTK_implicit(OutputVTK_imp.c_str(),implicit_function,dx);
-                std::ostringstream ssSurface;
-                ssSurface << "outputSurface/output" << std::setw(3) << std::setfill('0') << cnt << ".xyz";
-                std::string OutputSurface(ssSurface.str());
-                outputSurface(OutputSurface.c_str(),surfaceMesh);
+                //std::ostringstream ssSurface;
+                //ssSurface << "outputSurface/output" << std::setw(3) << std::setfill('0') << cnt << ".xyz";
+                //std::string OutputSurface(ssSurface.str());
+                //outputSurface(OutputSurface.c_str(),surfaceMesh);
                 volumes.push_back(cal_volume(particles, map, radius, dx, Nx, Ny, Nz, threshold,i));
                 cnt++;
                 if(timer == 2)TD.endTimer();
             }
         }
-        std::cout << "finFlip";
-        outputVolume("volumes.dat",volumes);
+        outputVolume(filename.c_str(),volumes);
         std::cout << "dx:" << dx << " dt:" << dt << " Nx*Ny*Nz:" << Nx*Ny*Nz << " repeat:" << repeatCount << std::endl;
-        std::cout << "alpha:" << alpha << " gamma:" << gamma << " radius:" << radius <<std::endl;
-        std::cout << "extend:" << extend << std::endl;
+        std::cout << " gamma:" << gamma << " radius:" << radius << " threshold:" << threshold <<std::endl;
+        //std::cout << "extend:" << extend << std::endl;
+        std::cout << std::endl;
     }
     void output(std::vector<Eigen::Vector3d> &v){
         v.resize(particles.size());
         for(int i=0;i<v.size();i++)v[i] = particles[i].position;
     }
-    PIC_FLIP(double x,double t,double density,double r):Fluid(x,t,density){
+    PIC_FLIP(double x,double t,double density,double r,double th,double ga):Fluid(x,t,density){
         division = {Nx,Ny,Nz};
         initParticles();
         radius = r;
+        threshold = th;
+        gamma = ga;
     }
     void initParticles(){
         for(unsigned int i=0;i<Nx;i++){

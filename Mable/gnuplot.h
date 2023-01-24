@@ -22,12 +22,21 @@ void outputPLT_P(int nx,int ny,int nz,double dx,const char* OutputFileName,myArr
 }
 void outputSurface(const char* OutputFileName,std::vector<std::vector<double>> &mesh){
     FILE *ofp = fopen(OutputFileName,"w");
-    for(auto x:mesh)fprintf(ofp,"%lf %lf %lf\n",x[0],x[1],x[2]);
+    for(auto x:mesh)fprintf(ofp,"%lf %lf %lf %lf\n",x[0],x[1],x[2],x[3]);
     fclose(ofp);
 }
 void outputVolume(const char* OutputFileName,std::vector<double> &volumes){
     FILE *ofp = fopen(OutputFileName,"w");
-    for(int i=0;i<volumes.size();i++)fprintf(ofp,"%d %lf\n",i,volumes[i]);
+    double max = volumes[0];
+    double min = volumes[0];
+    for(int i=0;i<volumes.size();i++){
+        fprintf(ofp,"%d %lf\n",i,volumes[i]);
+        if(max < volumes[i])max = volumes[i];
+        if(min > volumes[i])min = volumes[i];
+    }
+    std::cout << "v[0]:" << volumes[0] << std::endl;
+    std::cout << "max:" << max << " ration:" << max/volumes[0] << std::endl;
+    std::cout << "min:" << min << " ration:" << min/volumes[0] << std::endl;
     fclose(ofp);
 }
 void outputPLT_M(int nx,int ny,const char* OutputFileName,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
