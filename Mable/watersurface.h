@@ -106,7 +106,6 @@ double cal_volume(std::vector<particle> &particles,std::unordered_map<std::vecto
                 }
             }
             //std::cout << "(" << i << "," << k << ") = " << c << std::endl;
-            
         }
     }
     return sum;

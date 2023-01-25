@@ -34,9 +34,9 @@ void outputVolume(const char* OutputFileName,std::vector<double> &volumes){
         if(max < volumes[i])max = volumes[i];
         if(min > volumes[i])min = volumes[i];
     }
-    std::cout << "v[0]:" << volumes[0] << std::endl;
-    std::cout << "max:" << max << " ration:" << max/volumes[0] << std::endl;
-    std::cout << "min:" << min << " ration:" << min/volumes[0] << std::endl;
+    std::cout << "(max,min) = " << std::endl;
+    std::cout << std::setprecision(4) << max/volumes[0] << "," << min/volumes[0] << std::endl;
+    //std::cout << "min:" << min << " ration:" << min/volumes[0] << std::endl;
     fclose(ofp);
 }
 void outputPLT_M(int nx,int ny,const char* OutputFileName,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){

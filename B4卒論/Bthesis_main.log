@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.141592653-p4.0.0-220214-2.6 (utf8.euc) (TeX Live 2022) (preloaded format=platex 2022.10.15)  23 JAN 2023 22:21
+This is e-pTeX, Version 3.141592653-p4.0.0-220214-2.6 (utf8.euc) (TeX Live 2022) (preloaded format=platex 2022.10.15)  26 JAN 2023 03:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -225,7 +225,11 @@ File: l3backend-dvips.def 2022-02-07 L3 backend support: dvips
 \g__pdf_backend_link_int=\count288
 \g__pdf_backend_link_sf_int=\count289
 )
-(./Bthesis_main.aux)
+(./Bthesis_main.aux
+
+LaTeX Warning: Label `fuortes' multiply defined.
+
+)
 \openout1 = `Bthesis_main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
@@ -269,22 +273,22 @@ LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <24.88> not available
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <24.88> not available
 (Font)              Font shape `JY1/gt/m/n' tried instead on input line 73.
  (./Bthesis_main.toc
-LaTeX Font Info:    Trying to load font information for U+msa on input line 4.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
 
 (/usr/local/texlive/2022/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 4.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 3.
 
 (/usr/local/texlive/2022/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-))
+) [2
+
+])
 \tf@toc=\write3
 \openout3 = `Bthesis_main.toc'.
 
- [2
-
-]
+ [3]
 第 1 章
 [1
 
@@ -292,80 +296,83 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 第 2 章
 [2
 
-]
-第 3 章
-[3
-
-] [4] [5]
+] [3] [4]
 File: 3dstaggerd.png Graphic file (type bmp)
 <3dstaggerd.png>
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <10.95> not available
-(Font)              Font shape `JT1/gt/m/n' tried instead on input line 198.
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 177.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <10.95> not available
-(Font)              Font shape `JY1/gt/m/n' tried instead on input line 198.
- [6]
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 177.
 File: pressure_model.png Graphic file (type bmp)
 <pressure_model.png>
- [7]
-Overfull \hbox (6.89273pt too wide) in paragraph at lines 234--235
+ [5] [6] [7]
+Overfull \hbox (6.89273pt too wide) in paragraph at lines 213--214
 []$\OMS/cmsy/m/n/12 r\OML/cmm/b/it/12 p[]$ \JY1/mc/m/n/12 割り振られた方向の圧
 力勾配\OT1/cmr/m/n/12 . \JY1/mc/m/n/12 前方差分によ っ て ， $\OMS/cmsy/m/n/12 
 r\OML/cmm/b/it/12 p[]\JY1/mc/m/n/12 （\OML/cmm/b/it/12 x\OML/cmm/m/it/12 ; t\JY
 1/mc/m/n/12 ） \OT1/cmr/m/n/12 = []$
  []
 
-[8] [9] [10]
+[8] [9]
 File: exp_simbol.png Graphic file (type bmp)
 <exp_simbol.png>
- [11] [12] [13] [14] [15]
-第 4 章
-[16
+ [10] [11] [12] [13] [14]
+第 3 章
+[15
 
-] [17] [18]
+] [16] [17]
 File: paraview.png Graphic file (type bmp)
 <paraview.png>
- [19] [20]
+ [18] [19]
+第 4 章
+[20
+
+] [21]
+File: artificial_space.png Graphic file (type bmp)
+<artificial_space.png>
+ [22]
 第 5 章
-
-LaTeX Warning: Citation `kusano' on page 21 undefined on input line 456.
-
-LaTeX Font Info:    Kanji font shape `JY1/gt/m/it' undefined
-(Font)              No change on input line 458.
-LaTeX Font Info:    Kanji font shape `JY1/gt/m/it' undefined
-(Font)              No change on input line 475.
-[21
-
-] [22]
-第 6 章
-LaTeX Font Info:    Kanji font shape `JY1/gt/m/it' undefined
-(Font)              No change on input line 484.
 [23
 
 ] [24
 
 ]
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 505.
+(Font)              No change on input line 516.
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 508.
+(Font)              No change on input line 519.
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 512.
+(Font)              No change on input line 522.
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 518.
- [25
+(Font)              No change on input line 525.
 
-] (./Bthesis_main.aux)
+Underfull \hbox (badness 1867) in paragraph at lines 525--526
+[]\OT1/cmr/m/n/12 J.U.Brackbill. D.B.KotheH.M.Ruppel. Flip: A low-dissipation, 
+particle-in-cell
+ []
 
-LaTeX Warning: There were undefined references.
+LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+(Font)              No change on input line 528.
+LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+(Font)              No change on input line 530.
+LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+(Font)              No change on input line 532.
+LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+(Font)              No change on input line 534.
+[25
+
+] [26] (./Bthesis_main.aux)
+
+LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 4667 strings out of 478724
- 76597 string characters out of 5858391
- 374072 words of memory out of 5000000
- 23051 multiletter control sequences out of 15000+600000
+ 4684 strings out of 478724
+ 76902 string characters out of 5858391
+ 377072 words of memory out of 5000000
+ 23066 multiletter control sequences out of 15000+600000
  490483 words of font info for 110 fonts, out of 8000000 for 9000
  929 hyphenation exceptions out of 8191
- 55i,8n,63p,1060b,579s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 55i,10n,63p,1056b,579s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Bthesis_main.dvi (28 pages, 84604 bytes).
+Output written on Bthesis_main.dvi (30 pages, 96076 bytes).

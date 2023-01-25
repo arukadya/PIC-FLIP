@@ -84,7 +84,7 @@ struct PIC_FLIP : Fluid{
             }
         }
         outputVolume(filename.c_str(),volumes);
-        std::cout << "dx:" << dx << " dt:" << dt << " Nx*Ny*Nz:" << Nx*Ny*Nz << " repeat:" << repeatCount << std::endl;
+        //std::cout << "dx:" << dx << " dt:" << dt << " Nx*Ny*Nz:" << Nx*Ny*Nz << " repeat:" << repeatCount << std::endl;
         std::cout << " gamma:" << gamma << " radius:" << radius << " threshold:" << threshold <<std::endl;
         //std::cout << "extend:" << extend << std::endl;
         std::cout << std::endl;
