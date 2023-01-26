@@ -35,7 +35,7 @@ void outputVolume(const char* OutputFileName,std::vector<double> &volumes){
         if(min > volumes[i])min = volumes[i];
     }
     std::cout << "(max,min) = " << std::endl;
-    std::cout << std::setprecision(4) << max/volumes[0] << "," << min/volumes[0] << std::endl;
+    std::cout << std::setprecision(4) << max/volumes[0] << "," << min/volumes[0] << "," << (max/volumes[0] - min/volumes[0])*100 << "\%"<<std::endl;
     //std::cout << "min:" << min << " ration:" << min/volumes[0] << std::endl;
     fclose(ofp);
 }

@@ -10,6 +10,7 @@ int main(int argc, const char * argv[]) {
     std::vector<double> thrs = {0.7,0.8,0.9,1.0,1.1};
     std::vector<double> gams = {1.5,1,0.5};
     std::vector<std::string> r_s = {"r2dx","r15dx","rdx"};
+//    std::vector<std::string> t_s = {"th_07","th_08","th_09","th_10","th_11"};
     std::vector<std::string> t_s = {"th_07","th_08","th_09","th_10","th_11"};
     std::vector<std::string> g_s = {"ga_15","ga_1","ga_05"};
     for(int i=0;i<rads.size();i++){
