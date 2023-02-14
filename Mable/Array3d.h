@@ -20,11 +20,13 @@
 struct myArray3d{
     std::vector<std::vector<std::vector<double>>>value;
     int nx,ny,nz;
+    int size;
     myArray3d();
     myArray3d(int size_x,int size_y,int size_z){
         nx = size_x;
         ny = size_y;
         nz = size_z;
+        size = nx*ny*nz;
         value.resize(nx);
         for(int i=0;i<nx;i++){
             value[i].resize(ny);
@@ -37,6 +39,7 @@ struct myArray3d{
         nx = size_x;
         ny = size_y;
         nz = size_z;
+        size = nx*ny*nz;
         value.resize(nx);
         for(int i=0;i<nx;i++){
             value[i].resize(ny);

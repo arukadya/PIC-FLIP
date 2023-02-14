@@ -70,10 +70,10 @@ struct PIC_FLIP : Fluid{
                 output(vertices);
                 //surfaceMesh = makeSurface(particles, map, radius, dx, Nx, Ny, Nz, threshold,th_d);
                 implicit_function = cal_implicitFunction(particles, map, radius, dx, Nx, Ny, Nz);
-                std::string OutputVTK_imp = foldername + "/output"+std::to_string(cnt)+".vtk";
-                outputVTK(OutputVTK_imp.c_str(),vertices);
-                
-                outputVTK_implicit(OutputVTK_imp.c_str(),implicit_function,dx);
+                std::string OutputVTK_imp = foldername + "/output" + "/output"+std::to_string(cnt)+".vtk";
+                std::string OutputVTK_iso = foldername + "/isosurface"+ "/output"+std::to_string(cnt)+".vtk";
+                outputVTK(OutputVTK_iso.c_str(),implicit_function,dx);
+                outputVTK_implicit(OutputVTK_imp.c_str(),implicit_function,dx,threshold);
                 //std::ostringstream ssSurface;
                 //ssSurface << "outputSurface/output" << std::setw(3) << std::setfill('0') << cnt << ".xyz";
                 //std::string OutputSurface(ssSurface.str());
