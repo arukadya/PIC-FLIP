@@ -22,162 +22,157 @@
 #include <Eigen/Core>
 #include <Eigen/IterativeLinearSolvers>
 #include <iostream>
-#define Nx 64
-#define Ny 64 //グリッドの数
+#include "Array3d.h"
+#define Nx 16
+#define Ny 16
+#define Nz 16//グリッドの数
 #define g0 9.8
 using ScalarType = double;
 using IndexType = int64_t;
-using Triplet = Eigen::Triplet<ScalarType, IndexType>;
+using Triplet = Eigen::Triplet<ScalarType,IndexType>;
 using SparseMatrix = Eigen::SparseMatrix<ScalarType>;
+typedef Eigen::SparseMatrix<double, Eigen::RowMajor, int64_t> SpMat;
 struct Fluid{
     double dx;//セルの大きさ
     double dt;//時間の刻み幅
     double rho;
-    std::vector<std::vector<double>>u;//水平
-    std::vector<std::vector<double>>old_u;//水平
-    std::vector<std::vector<double>>v;//鉛直
-    std::vector<std::vector<double>>old_v;//水平
-    //std::vector<std::vector<double>>delta_u;//水平
-    //std::vector<std::vector<double>>delta_v;//鉛直
-    std::vector<std::vector<double>>p;//圧力
-    std::vector<std::vector<double>>p_Eigen;//圧力
-    std::vector<std::vector<double>>umi;//Gridの重さ
-    std::vector<std::vector<double>>vmi;//Gridの重さ
-    //std::vector<std::vector<Eigen::Vector2d>>fi;//Gridに加わる外力
-    std::vector<std::vector<double>>ufi;//Gridに加わる外力
-    std::vector<std::vector<double>>vfi;//Gridに加わる外力
+    myArray3d u = myArray3d(Nx+1,Ny,Nz,0);//水平
+    myArray3d old_u = myArray3d(Nx+1,Ny,Nz,0);//水平
+    myArray3d umi = myArray3d(Nx+1,Ny,Nz,0);//Gridの重さ
+    myArray3d ufi = myArray3d(Nx+1,Ny,Nz,0);//Gridに加わる外力
+    
+    myArray3d v = myArray3d(Nx,Ny+1,Nz,0);//鉛直
+    myArray3d old_v = myArray3d(Nx,Ny+1,Nz,0);//水平
+    myArray3d vmi = myArray3d(Nx,Ny+1,Nz,0);//Gridの重さ
+    myArray3d vfi = myArray3d(Nx,Ny+1,Nz,0);//Gridに加わる外力
+    
+    myArray3d w = myArray3d(Nx,Ny,Nz+1,0);
+    myArray3d old_w = myArray3d(Nx,Ny,Nz+1,0);
+    myArray3d wmi = myArray3d(Nx,Ny,Nz+1,0);//Gridの重さ
+    myArray3d wfi = myArray3d(Nx,Ny,Nz+1,0);//Gridに加わる外力
+    
+    myArray3d p = myArray3d(Nx,Ny,Nz,0);//圧力
     std::vector<double> weights;//粒子の重み
     double L;
-    
-    Fluid(double x,double t,double density,std::vector<std::vector<double>> &horizontal_v,std::vector<std::vector<double>> &vertical_v,std::vector<std::vector<double>> &pressure,std::vector<std::vector<double>>&gridUM,std::vector<std::vector<double>>&gridVM,std::vector<std::vector<double>>&gridUF,std::vector<std::vector<double>>&gridVF){
+    Eigen::Vector3d f0 = {0.0,-g0,0.0};
+    Fluid(double x,double t,double density){
         dx = x;
         dt = t;
         rho = density;
-        u = horizontal_v;//v[nx+1][ny]
-        old_u = horizontal_v;
-        //delta_u = horizontal_v;
-        v = vertical_v;//v[nx][ny+1]
-        old_v = vertical_v;
-        //delta_v = vertical_v;
-        p = pressure;//p[nx][ny]
-        p_Eigen = pressure;
-        umi = gridUM;
-        vmi = gridVM;
-        ufi = gridUF;
-        vfi = gridVF;
         L = dx*Nx;
-        initPressure();
-        std::cout << "initpressure" << std::endl;
-        initForce();
-        std::cout << "initforce" << std::endl;
+        vfi.reset(f0.y());
     }
-    std::vector<int>DirichletBoundaryCondition(int i,int j,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
-        std::vector<int>ret(4,1);
-        if(i == 0)ret[2] = 0;
-        else if(map.find({i-1,j}) == map.end())ret[2] = 0;
+    std::vector<int>DirichletBoundaryCondition(int i,int j,int k,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
+        std::vector<int>ret(6,1);
         if(i == Nx-1)ret[0] = 0;
-        else if(map.find({i+1,j}) == map.end())ret[0] = 0;
-        if(j == 0)ret[3] = 0;
-        else if(map.find({i,j-1}) == map.end())ret[3] = 0;
+        else if(map.find({i+1,j,k}) == map.end())ret[0] = 0;
         if(j == Ny-1)ret[1] = 0;
-        else if(map.find({i,j+1}) == map.end())ret[1] = 0;
+        else if(map.find({i,j+1,k}) == map.end())ret[1] = 0;
+
+        if(i == 0)ret[2] = 0;
+        else if(map.find({i-1,j,k}) == map.end())ret[2] = 0;
+        if(j == 0)ret[3] = 0;
+        else if(map.find({i,j-1,k}) == map.end())ret[3] = 0;
+
+        if(k == 0)ret[4] = 0;
+        else if(map.find({i,j,k-1}) == map.end())ret[4] = 0;
+        if(k == Nz-1)ret[5] = 0;
+        else if(map.find({i,j,k+1}) == map.end())ret[5] = 0;
         return ret;
     }
-    void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<2>>&map){
-        SparseMatrix A(Nx*Ny,Nx*Ny);
-        Eigen::VectorXd b = Eigen::VectorXd::Zero(Nx*Ny);
+    void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
+        SparseMatrix A(Nx*Ny*Nz,Nx*Ny*Nz),B(Nx*Ny*Nz,Nx*Ny*Nz);
+        Eigen::VectorXd b = Eigen::VectorXd::Zero(Nx*Ny*Nz);
         Eigen::VectorXd px;
+        std::set<int> DirichletKey;
+        std::vector<std::vector<int>>keys;
         //Tripletの計算
         std::vector<Triplet> triplets;
         for(int i=0;i<Nx;i++){
             for(int j=0;j<Ny;j++){
-                std::vector<int>key = {i,j};
-                if(map.find(key) == map.end()){
-                    triplets.emplace_back(i*Nx+j,i*Nx+j, 1);
-                    //p[i][j] = 0;
-                    continue;
+                for(int k=0;k<Nz;k++){
+                    std::vector<int>key = {i,j,k};
+                    if(map.find(key) == map.end()){
+                        //前処理でAが変更されてしまうので，境界条件として別で無理矢理設定する．
+                        triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+k*Nx*Ny,1);
+                        keys.push_back(key);
+                        DirichletKey.insert(i+j*Nx+k*Nx*Ny);
+                        continue;
+                    }
+                    double scale = dt/(rho*dx*dx);
+                    //std::cout << i << "," << j << std::endl;
+                    double D[6] = {1.0,1.0,-1.0,-1.0,-1.0,1.0};//周囲6方向に向かって働く、圧力の向き
+                    //double F[4] = {(double)(i<Nx-1),(double)(j<Ny-1),(double)(i>0),(double)(j>0)};//境界条件。壁なら0,流体なら1
+                    
+                    std::vector<int> F = {i<Nx-1,j<Ny-1,i>0,j>0,k>0,k<Nz-1};
+                    double U[6] = {
+                        u.value[i+1][j][k],
+                        v.value[i][j+1][k],
+                        u.value[i][j][k],
+                        v.value[i][j][k],
+                        w.value[i][j][k],
+                        w.value[i][j][k+1]};
+                    double sumP = 0;
+                    for(int n=0;n<6;n++){
+                        sumP += -F[n]*scale;
+                        //sumP += scale;
+                        b(i+j*Nx+k*Nx*Ny) += D[n]*F[n]*U[n]/(dx);
+                    }
+                    F = DirichletBoundaryCondition(i,j,k,map);
+//                    for(int n=0;n<6;n++){
+//                        std::cout << F_pri[n] << "," << F[n] << std::endl;
+//                    }
+                    triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+k*Nx*Ny, sumP);
+                    if(F[0])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+1+j*Nx+k*Nx*Ny, F[0]*scale);
+                    if(F[1])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+(j+1)*Nx+k*Nx*Ny, F[1]*scale);
+                    if(F[2])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i-1+j*Nx+k*Nx*Ny, F[2]*scale);
+                    if(F[3])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+(j-1)*Nx+k*Nx*Ny, F[3]*scale);
+                    if(F[4])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+(k-1)*Nx*Ny, F[4]*scale);
+                    if(F[5])triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+(k+1)*Nx*Ny, F[5]*scale);
                 }
-                double scale = dt/(rho*dx*dx);
-                //std::cout << i << "," << j << std::endl;
-                double D[4] = {1.0,1.0,-1.0,-1.0};//周囲4方向に向かって働く、圧力の向き
-                //double F[4] = {(double)(i<Nx-1),(double)(j<Ny-1),(double)(i>0),(double)(j>0)};//境界条件。壁なら0,流体なら1
-                std::vector<int> F = {i<Nx-1,j<Ny-1,i>0,j>0};
-                double U[4] = {u[i+1][j],v[i][j+1],u[i][j],v[i][j]};
-                double sumP = 0;
-                for(int n=0;n<4;n++){
-                    sumP += -F[n]*scale;
-                    b(i*Nx+j) += D[n]*F[n]*U[n]/dx;
-                }
-                //F = DirichletBoundaryCondition(i,j,map);
-                triplets.emplace_back(i*Nx+j,i*Nx+j, sumP);
-                if(F[0])triplets.emplace_back(i*Nx+j,(i+1)*Nx+j, F[0]*scale);
-                if(F[1])triplets.emplace_back(i*Nx+j,i*Nx+j+1, F[1]*scale);
-                if(F[2])triplets.emplace_back(i*Nx+j,(i-1)*Nx+j, F[2]*scale);
-                if(F[3])triplets.emplace_back(i*Nx+j,i*Nx+j-1, F[3]*scale);
             }
         }
         A.setFromTriplets(triplets.begin(), triplets.end());
-//        Eigen::ConjugateGradient<SparseMatrix> solver;
-        Eigen::BiCGSTAB<SparseMatrix> solver;
+        Eigen::ConjugateGradient<SparseMatrix> solver;
+        
+        //Eigen::BiCGSTAB<SparseMatrix> solver;
+        
+        for(int i=0;i<A.outerSize();++i){
+            for(SparseMatrix::InnerIterator it(A,i);it;++it){
+                if(it.row() == *DirichletKey.begin()){
+                    it.valueRef() = 1;
+                    DirichletKey.erase(DirichletKey.begin());
+                }
+            }
+        }
         solver.compute(A);
         px = solver.solve(b);
         for(int i=0;i<Nx;i++){
             for(int j=0;j<Ny;j++){
-                //p_Eigen[i][j] = px(i*Nx+j);
-                p[i][j] = px(i*Nx+j);
+                for(int k=0;k<Nz;k++){
+                    p.value[i][j][k] = px(i+j*Nx+k*Nx*Ny);
+                }
             }
         }
-        for(int i=1; i<Nx;i++)for(int j=0;j<Ny;j++){
-            u[i][j] = u[i][j] - dt/rho * (p[i][j]-p[i-1][j])/dx;
-            //if(fabs(u[i][j] > 1.0e-10))std::cout << i << "," << j << ":"<< u[i][j] << std::endl;
-            //delta_u[i][j] = -dt/rho * (p[i][j]-p[i-1][j])/dx;
+        for(auto x:keys){
+            if(px(x[0] + x[1]*Ny + x[2]*Nz*Nz) > 1.0e-4)std::cout << x[0] + x[1]*Ny + x[2]*Nz*Nz << "," << px(x[0] + x[1]*Ny + x[2]*Nz*Nz) <<std::endl;
+            //else std::cout << "success:" << x[0] + x[1]*Ny + x[2]*Nz*Nz << std::endl;
         }
-        for(int i=0;i<Nx;i++)for(int j=1;j<Ny;j++){
-            v[i][j] = v[i][j] - dt/rho * (p[i][j]-p[i][j-1])/dx;
+        
+        for(int i=1; i<Nx;i++){
+            for(int j=0;j<Ny;j++){
+                for(int k=0;k<Nz;k++)u.value[i][j][k] = u.value[i][j][k] - dt/rho * (p.value[i][j][k]-p.value[i-1][j][k])/dx;
+            }
         }
-    }
-    void print_pressure(){
+        for(int i=0;i<Nx;i++){
+            for(int j=1;j<Ny;j++){
+                for(int k=0;k<Nz;k++)v.value[i][j][k] = v.value[i][j][k] - dt/rho * (p.value[i][j][k]-p.value[i][j-1][k])/dx;
+            }
+        }
         for(int i=0;i<Nx;i++){
             for(int j=0;j<Ny;j++){
-                std::cout << i <<","<< j << " " <<p[i][j] << "," << p_Eigen[i][j] << std::endl;
+                for(int k=1;k<Nz;k++)w.value[i][j][k] = w.value[i][j][k] - dt/rho * (p.value[i][j][k]-p.value[i][j][k-1])/dx;
             }
-        }
-    }
-    void print_velocity(){
-        //for(int i=0;i<Nx;i++){
-            for(int j=0;j<Ny;j++){
-            std::cout << u[1][j] << " ";
-            }
-            std::cout << std::endl;
-        for(int j=0;j<Ny;j++){
-        std::cout << u[Nx-1][j] << " ";
-        }
-        std::cout << std::endl;
-        //}
-        //std::cout << std::endl;
-    }
-    void initPressure(){
-        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny;j++){
-            if(i > Nx/2)p[i][j] = 0;
-            //else p[i][j] = (double)(Nx-1-i)/Ny;
-            else p[i][j] = 0;
-        }
-    }
-    void initForce(){
-        Eigen::Vector2d f0 = {0.0,-g0};
-        Eigen::Vector2d f1 = {0.0,0.0};
-        Eigen::Vector2d f2 = {0.0,g0};
-        for(unsigned int i=0;i<Nx+1;i++)for(unsigned int j=0;j<Ny;j++){
-            //std::cout << f0.x() << "," << f0.y() << std::endl;
-//            if(i == 0 || i == Nx || j == 0 || j == Ny-1)ufi[i][j] = f2.x();
-//            else ufi[i][j] = f0.x();
-            ufi[i][j] = f0.x();
-        }
-        for(unsigned int i=0;i<Nx;i++)for(unsigned int j=0;j<Ny+1;j++){
-            //std::cout << f0.x() << "," << f0.y() << std::endl;
-//            if(i == 0 || i == Nx || j == 0 || j == Ny-1)vfi[i][j] = f1.y();
-//            else vfi[i][j] = f0.y();
-            vfi[i][j] = f0.y();
         }
     }
 };

@@ -1,0 +1,35 @@
+[\e[34mx\e[0m] g++ -std=c++2a -O3 main.cpp -o a.out -I /Users/sunouchi/c++/library/eigen-3.4.0 -I /Users/sunouchi/c++/library/MyLib
+[\e[32m+\e[0m] successful complie
+[\e[34mx\e[0m] run ./a.out
+(max,min) = 
+1.388,1,38.83%
+ gamma:2.5 radius:0.2 threshold:0.9
+
+(max,min) = 
+1.347,1,34.69%
+ gamma:2 radius:0.2 threshold:0.9
+
+(max,min) = 
+1.567,1,56.68%
+ gamma:2.5 radius:0.2 threshold:1.1
+
+(max,min) = 
+1.363,1,36.27%
+ gamma:2 radius:0.2 threshold:1.1
+
+(max,min) = 
+1.257,0.5131,74.34%
+ gamma:2.5 radius:0.1 threshold:0.9
+
+(max,min) = 
+1.235,0.4621,77.26%
+ gamma:2 radius:0.1 threshold:0.9
+
+(max,min) = 
+1.07,0.481,58.89%
+ gamma:2.5 radius:0.1 threshold:1.1
+
+(max,min) = 
+1.102,0.4431,65.89%
+ gamma:2 radius:0.1 threshold:1.1
+

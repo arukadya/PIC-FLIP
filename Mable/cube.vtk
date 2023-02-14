@@ -1,0 +1,17 @@
+# vtk DataFile Version 2.0
+hexahedron
+ASCII
+DATASET UNSTRUCTURED_GRID
+POINTS 8 float
+0 0 0
+1.6 0 0
+1.6 1.6 0
+0 1.6 0
+0 0 1.6
+1.6 0 1.6
+1.6 1.6 1.6
+0 1.6 1.6
+CELLS 1 9
+8 0 1 2 3 4 5 6 7
+CELL_TYPES 1
+12
