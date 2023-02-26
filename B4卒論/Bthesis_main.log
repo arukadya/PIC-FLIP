@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.141592653-p4.0.0-220214-2.6 (utf8.euc) (TeX Live 2022) (preloaded format=platex 2022.10.15)  27 JAN 2023 13:07
+This is e-pTeX, Version 3.141592653-p4.0.0-220214-2.6 (utf8.euc) (TeX Live 2022) (preloaded format=platex 2022.10.15)  26 FEB 2023 22:05
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -225,7 +225,14 @@ File: l3backend-dvips.def 2022-02-07 L3 backend support: dvips
 \g__pdf_backend_link_int=\count288
 \g__pdf_backend_link_sf_int=\count289
 )
-(./Bthesis_main.aux)
+(./Bthesis_main.aux
+
+LaTeX Warning: Label `fig:ParaView1' multiply defined.
+
+
+LaTeX Warning: Label `fig:ParaView2' multiply defined.
+
+)
 \openout1 = `Bthesis_main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
@@ -260,14 +267,14 @@ LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <14.4> not available
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <14.4> not available
 (Font)              Font shape `JY1/gt/m/n' tried instead on input line 62.
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <12> not available
-(Font)              Font shape `JT1/gt/m/n' tried instead on input line 69.
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 70.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <12> not available
-(Font)              Font shape `JY1/gt/m/n' tried instead on input line 69.
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 70.
  [1]
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <24.88> not available
-(Font)              Font shape `JT1/gt/m/n' tried instead on input line 74.
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 75.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <24.88> not available
-(Font)              Font shape `JY1/gt/m/n' tried instead on input line 74.
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 75.
  (./Bthesis_main.toc
 LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
 
@@ -296,13 +303,13 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 File: 3dstaggerd.png Graphic file (type bmp)
 <3dstaggerd.png>
 LaTeX Font Info:    Font shape `JT1/mc/bx/n' in size <10.95> not available
-(Font)              Font shape `JT1/gt/m/n' tried instead on input line 178.
+(Font)              Font shape `JT1/gt/m/n' tried instead on input line 184.
 LaTeX Font Info:    Font shape `JY1/mc/bx/n' in size <10.95> not available
-(Font)              Font shape `JY1/gt/m/n' tried instead on input line 178.
+(Font)              Font shape `JY1/gt/m/n' tried instead on input line 184.
 File: pressure_model.png Graphic file (type bmp)
 <pressure_model.png>
  [5] [6] [7]
-Overfull \hbox (3.93521pt too wide) in paragraph at lines 214--215
+Overfull \hbox (3.93521pt too wide) in paragraph at lines 220--221
 []$\OMS/cmsy/m/n/12 r\OML/cmm/b/it/12 p[]$ \JY1/mc/m/n/12 割り振られた方向の圧
 力勾配\OT1/cmr/m/n/12 . \JY1/mc/m/n/12 前方差分によ っ て ， $\OMS/cmsy/m/n/12 
 r\OML/cmm/b/it/12 p[]\OT1/cmr/m/n/12 (\OML/cmm/b/it/12 x\OML/cmm/m/it/12 ; t\OT
@@ -314,40 +321,64 @@ r\OML/cmm/b/it/12 p[]\OT1/cmr/m/n/12 (\OML/cmm/b/it/12 x\OML/cmm/m/it/12 ; t\OT
 [16
 
 ] [17] [18]
-File: r2.png Graphic file (type bmp)
-<r2.png>
-File: r15.png Graphic file (type bmp)
-<r15.png>
-File: r1.png Graphic file (type bmp)
-<r1.png>
-
-Underfull \hbox (badness 10000) in paragraph at lines 412--430
-[][] []
- []
-
-[19] [20]
+File: cube_r15.png Graphic file (type bmp)
+<cube_r15.png>
+File: iso_r15.png Graphic file (type bmp)
+<iso_r15.png>
+File: cube_r1.png Graphic file (type bmp)
+<cube_r1.png>
+File: iso_r1.png Graphic file (type bmp)
+<iso_r1.png>
+ [19] [20]
 第 4 章
 
-LaTeX Warning: Reference `fig:ParaView' on page 21 undefined on input line 436.
+LaTeX Warning: Reference `fig:ParaView' on page 21 undefined on input line 439.
 
+
+
+Overfull \hbox (13.06404pt too wide) in paragraph at lines 446--455
+ [][][][] 
+ []
 
 [21
 
-] [22] [23]
+]
+Overfull \hbox (13.06404pt too wide) in paragraph at lines 460--470
+ [][][][] 
+ []
+
+
+Overfull \hbox (13.06404pt too wide) in paragraph at lines 475--484
+ [][][][] 
+ []
+
+[22]
+
+LaTeX Warning: Reference `fig:disipassion' on page 23 undefined on input line 4
+93.
+
+[23]
 File: artificial_space.png Graphic file (type bmp)
 <artificial_space.png>
 File: disipassion.png Graphic file (type bmp)
 <disipassion.png>
+File: iso_disipassion.png Graphic file (type bmp)
+<iso_disipassion.png>
+
+Overfull \hbox (22.7636pt too wide) in paragraph at lines 515--516
+ [][] 
+ []
+
 File: graph.png Graphic file (type bmp)
 <graph.png>
 
-Overfull \hbox (28.45276pt too wide) in paragraph at lines 514--515
+Overfull \hbox (256.0748pt too wide) in paragraph at lines 521--522
  [][] 
  []
 
 
-Overfull \hbox (2.61107pt too wide) in paragraph at lines 506--518
-[][] [] 
+Underfull \hbox (badness 10000) in paragraph at lines 507--525
+[][] []
  []
 
 [24] [25]
@@ -358,39 +389,42 @@ Overfull \hbox (2.61107pt too wide) in paragraph at lines 506--518
 
 ]
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 548.
+(Font)              No change on input line 554.
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 550.
+(Font)              No change on input line 556.
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 553.
+(Font)              No change on input line 559.
 
-Underfull \hbox (badness 1867) in paragraph at lines 553--554
+Underfull \hbox (badness 1867) in paragraph at lines 559--560
 []\OT1/cmr/m/n/12 J.U.Brackbill. D.B.KotheH.M.Ruppel. Flip: A low-dissipation, 
 particle-in-cell
  []
 
 LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 556.
-LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 558.
-LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
-(Font)              No change on input line 560.
-LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
 (Font)              No change on input line 562.
+LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+(Font)              No change on input line 564.
+LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+(Font)              No change on input line 566.
+LaTeX Font Info:    Kanji font shape `JY1/mc/m/it' undefined
+(Font)              No change on input line 568.
 [28
 
 ] (./Bthesis_main.aux)
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: There were multiply-defined labels.
+
  ) 
 Here is how much of TeX's memory you used:
- 4705 strings out of 478724
- 77147 string characters out of 5858391
+ 4718 strings out of 478724
+ 77557 string characters out of 5858391
  380072 words of memory out of 5000000
- 23078 multiletter control sequences out of 15000+600000
+ 23087 multiletter control sequences out of 15000+600000
  489336 words of font info for 107 fonts, out of 8000000 for 9000
  929 hyphenation exceptions out of 8191
- 55i,10n,63p,1189b,579s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 55i,10n,63p,1207b,579s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Bthesis_main.dvi (32 pages, 104616 bytes).
+Output written on Bthesis_main.dvi (32 pages, 105460 bytes).

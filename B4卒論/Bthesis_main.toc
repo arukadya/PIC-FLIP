@@ -26,7 +26,7 @@
 \contentsline {section}{\numberline {3.2}圧力項の離散化と実装}{17}{}%
 \contentsline {section}{\numberline {3.3}シミュレーション領域の定義}{18}{}%
 \contentsline {section}{\numberline {3.4}境界面の定義}{19}{}%
-\contentsline {section}{\numberline {3.5}シミュレーションの定数の決定}{20}{}%
+\contentsline {section}{\numberline {3.5}シミュレーションのパラメータの決定}{20}{}%
 \contentsline {chapter}{\numberline {第4章}計算機実験}{21}{}%
 \contentsline {section}{\numberline {4.1}実験手法}{21}{}%
 \contentsline {section}{\numberline {4.2}実験結果}{21}{}%

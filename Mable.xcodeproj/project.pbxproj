@@ -39,8 +39,6 @@
 		67D7496329727F1B0010E44E /* Bthesis_main.aux */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bthesis_main.aux; sourceTree = "<group>"; };
 		67D7496429727F1B0010E44E /* Bthesis_main.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Bthesis_main.pdf; sourceTree = "<group>"; };
 		67D7496529727F1B0010E44E /* Bthesis_main.synctex.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = Bthesis_main.synctex.gz; sourceTree = "<group>"; };
-		67D7496629727F1B0010E44E /* スタッガード.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "スタッガード.png"; sourceTree = "<group>"; };
-		67D7496729727F1B0010E44E /* logo_color.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo_color.png; sourceTree = "<group>"; };
 		67D7496829727F1B0010E44E /* Bthesis_main.tex */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bthesis_main.tex; sourceTree = "<group>"; };
 		67D7496929727F1B0010E44E /* Bthesis_main.toc */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bthesis_main.toc; sourceTree = "<group>"; };
 		67D749702975445D0010E44E /* Array3d.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Array3d.h; sourceTree = "<group>"; };
@@ -100,8 +98,6 @@
 				67D7496329727F1B0010E44E /* Bthesis_main.aux */,
 				67D7496429727F1B0010E44E /* Bthesis_main.pdf */,
 				67D7496529727F1B0010E44E /* Bthesis_main.synctex.gz */,
-				67D7496629727F1B0010E44E /* スタッガード.png */,
-				67D7496729727F1B0010E44E /* logo_color.png */,
 				67D7496829727F1B0010E44E /* Bthesis_main.tex */,
 				67D7496929727F1B0010E44E /* Bthesis_main.toc */,
 			);

@@ -37,31 +37,18 @@ struct PIC_FLIP : Fluid{
     void execute(std::string foldername,std::string filename){
         int cnt = 0;
         for(unsigned int i=0;i<repeatCount;i++){
-            //std::cout << i << std::endl;
             if(timer == 2)TD.startTimer("execute");
-            //locateParticlesOnGrid(map);
             if(timer == 1)TD.startTimer("preprocess");
             preprocessingParticles();
             if(timer == 1)TD.endTimer();
-            //if(timer)TD.startTimer("P2G");
             particlesVelocityToGrid();
-            //if(timer)TD.endTimer();
             if(timer == 1)TD.startTimer("GridPressure");
             calGridPressure();
-            //std::cout << "pressure" << std::endl;
             if(timer == 1)TD.endTimer();
-            //if(timer)TD.startTimer("G2P_PIC");
             gridVelocityToParticles();
-            //std::cout << "G2P" << std::endl;
-            //if(timer)TD.endTimer();
-            //if(timer)TD.startTimer("G2P_FLIP");
-            //FLIPgridVelocityToParticles();
-            //if(timer)TD.endTimer();
-            //if(timer)TD.startTimer("advect");
             advectParticles();
-            //if(timer)TD.endTimer();
             
-            if(i%(repeatCount/100) == 0){
+            if(i%(repeatCount/500) == 0){
                 if(timer == 2){
                     TD.endTimer();
                     TD.startTimer("output");

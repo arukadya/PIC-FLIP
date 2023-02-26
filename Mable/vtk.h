@@ -37,13 +37,13 @@ void outputVTK(const char* OutputFileName,myArray3d &Vertices,double dx){
     std::vector<float> origin = {0,0,0};
     FILE *ofp = fopen(OutputFileName,"w");
     fprintf(ofp,"# vtk DataFile Version 2.0\n");
-    fprintf(ofp,"isosurface\n");
+    fprintf(ofp,"Isosurface\n");
     fprintf(ofp,"ASCII\n");
     fprintf(ofp,"DATASET STRUCTURED_POINTS\n");
     fprintf(ofp,"DIMENSIONS %d %d %d\n",Nx,Ny,Nz);
     fprintf(ofp,"ORIGIN %lf %lf %lf\n",origin[0] ,origin[1] ,origin[2] );
     fprintf(ofp,"SPACING %lf %lf %lf\n",dx,dx,dx);
-    fprintf(ofp,"POINT_DATA %d float\n",Vertices.size);
+    fprintf(ofp,"POINT_DATA %d\n",Vertices.size);
     fprintf(ofp,"SCALARS value float 1\n");
     fprintf(ofp,"LOOKUP_TABLE default\n");
     for(int i=0;i<Vertices.nx;i++){
