@@ -1,29 +1,22 @@
 #include "Hasher.h"//Hash関数
 #include <functional>//std::hash
 #include <type_traits>//std::remove_cvref_t(C++20)
-//#include <Eigen/Core>
-//#include <Eigen/Dense>
-//#include <Eigen/LU>
+
 #include "Fluid.h"
-#include "vtk.h"
-#include "gnuplot.h"
+#include "vtk.hpp"
 #include "functions.h"
-#include "particle.h"
+#include "particle.hpp"
 #include "watersurface.h"
 #define repeatCount 2000
 #define alpha 1
-//#define mp  //粒子の重さ
-//#define radius 0.0025
-//#define gamma 1
 #ifndef Flip_h
 #define Flip_h
 #define timer 0
 #define extend 0
-//#define threshold 0.95
 #define th_d 0.1
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
-    std::vector<particle>particles;//入力メッシュの頂点
+    std::vector<Particle>particles;//入力メッシュの頂点
     std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>map;//ハッシュテーブル
     std::vector<Eigen::Vector3d> vertices;//出力メッシュの頂点
     myArray3d implicit_function = myArray3d(Nx,Ny,Nz,0);

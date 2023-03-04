@@ -1,6 +1,4 @@
-#include "mable.h"
-#include "testdata.h"
-#include "Flip.h"
+#include "Flip.hpp"
 #include <sys/stat.h>
 int main(int argc, const char * argv[]) {
     double dx = 0.1;//セルの大きさ

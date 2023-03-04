@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		670DB31F29AB95960082CD3A /* vtk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 670DB31D29AB95960082CD3A /* vtk.cpp */; };
+		670DB32229AB95F00082CD3A /* Array3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 670DB32029AB95F00082CD3A /* Array3d.cpp */; };
+		670DB32529AB97750082CD3A /* particle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 670DB32329AB97750082CD3A /* particle.cpp */; };
+		670DB32829AB98230082CD3A /* functions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 670DB32629AB98230082CD3A /* functions.cpp */; };
+		670DB32B29AB9B2C0082CD3A /* watersurface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 670DB32929AB9B2C0082CD3A /* watersurface.cpp */; };
+		670DB32E29AB9C870082CD3A /* Fluid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 670DB32C29AB9C870082CD3A /* Fluid.cpp */; };
+		670DB33129AB9D740082CD3A /* Flip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 670DB32F29AB9D730082CD3A /* Flip.cpp */; };
 		67ACCC35290E75F200747A24 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 67ACCC34290E75F200747A24 /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -23,6 +30,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		670DB31D29AB95960082CD3A /* vtk.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vtk.cpp; sourceTree = "<group>"; };
+		670DB31E29AB95960082CD3A /* vtk.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vtk.hpp; sourceTree = "<group>"; };
+		670DB32029AB95F00082CD3A /* Array3d.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Array3d.cpp; sourceTree = "<group>"; };
+		670DB32129AB95F00082CD3A /* Array3d.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Array3d.hpp; sourceTree = "<group>"; };
+		670DB32329AB97750082CD3A /* particle.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = particle.cpp; sourceTree = "<group>"; };
+		670DB32429AB97750082CD3A /* particle.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = particle.hpp; sourceTree = "<group>"; };
+		670DB32629AB98230082CD3A /* functions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = functions.cpp; sourceTree = "<group>"; };
+		670DB32729AB98230082CD3A /* functions.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = functions.hpp; sourceTree = "<group>"; };
+		670DB32929AB9B2C0082CD3A /* watersurface.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = watersurface.cpp; sourceTree = "<group>"; };
+		670DB32A29AB9B2C0082CD3A /* watersurface.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = watersurface.hpp; sourceTree = "<group>"; };
+		670DB32C29AB9C870082CD3A /* Fluid.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Fluid.cpp; sourceTree = "<group>"; };
+		670DB32D29AB9C870082CD3A /* Fluid.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Fluid.hpp; sourceTree = "<group>"; };
+		670DB32F29AB9D730082CD3A /* Flip.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Flip.cpp; sourceTree = "<group>"; };
+		670DB33029AB9D730082CD3A /* Flip.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Flip.hpp; sourceTree = "<group>"; };
 		676BFDDA292112B1003D6FAB /* testdata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testdata.h; sourceTree = "<group>"; };
 		67ACCC31290E75F200747A24 /* Mable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Mable; sourceTree = BUILT_PRODUCTS_DIR; };
 		67ACCC34290E75F200747A24 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -30,7 +51,6 @@
 		67AE5143292B69B400A82D78 /* vtk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vtk.h; sourceTree = "<group>"; };
 		67AEACE0293C9573007590E2 /* functions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = functions.h; sourceTree = "<group>"; };
 		67B0653829214A7C0094A3A0 /* Fluid.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Fluid.h; sourceTree = "<group>"; };
-		67B0653929214BE50094A3A0 /* Flip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Flip.h; sourceTree = "<group>"; };
 		67B340E22946F28000A35561 /* gnuplot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gnuplot.h; sourceTree = "<group>"; };
 		67BB3FFA2979180C005FD109 /* watersurface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = watersurface.h; sourceTree = "<group>"; };
 		67C35CBD294E06B5006B57ED /* Hasher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hasher.h; sourceTree = "<group>"; };
@@ -80,12 +100,25 @@
 				67AE5143292B69B400A82D78 /* vtk.h */,
 				676BFDDA292112B1003D6FAB /* testdata.h */,
 				67ACCC3C29196F5F00747A24 /* mable.h */,
+				670DB31D29AB95960082CD3A /* vtk.cpp */,
+				670DB31E29AB95960082CD3A /* vtk.hpp */,
 				67B0653829214A7C0094A3A0 /* Fluid.h */,
+				670DB32029AB95F00082CD3A /* Array3d.cpp */,
+				670DB32129AB95F00082CD3A /* Array3d.hpp */,
 				67D749702975445D0010E44E /* Array3d.h */,
-				67B0653929214BE50094A3A0 /* Flip.h */,
+				670DB32F29AB9D730082CD3A /* Flip.cpp */,
+				670DB33029AB9D730082CD3A /* Flip.hpp */,
 				67BB3FFA2979180C005FD109 /* watersurface.h */,
+				670DB32929AB9B2C0082CD3A /* watersurface.cpp */,
+				670DB32A29AB9B2C0082CD3A /* watersurface.hpp */,
 				67C35CBE2956B961006B57ED /* particle.h */,
+				670DB32C29AB9C870082CD3A /* Fluid.cpp */,
+				670DB32D29AB9C870082CD3A /* Fluid.hpp */,
+				670DB32329AB97750082CD3A /* particle.cpp */,
+				670DB32429AB97750082CD3A /* particle.hpp */,
 				67AEACE0293C9573007590E2 /* functions.h */,
+				670DB32629AB98230082CD3A /* functions.cpp */,
+				670DB32729AB98230082CD3A /* functions.hpp */,
 				67C35CBD294E06B5006B57ED /* Hasher.h */,
 			);
 			path = Mable;
@@ -161,7 +194,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				670DB32229AB95F00082CD3A /* Array3d.cpp in Sources */,
+				670DB32B29AB9B2C0082CD3A /* watersurface.cpp in Sources */,
+				670DB32529AB97750082CD3A /* particle.cpp in Sources */,
+				670DB32829AB98230082CD3A /* functions.cpp in Sources */,
+				670DB33129AB9D740082CD3A /* Flip.cpp in Sources */,
+				670DB32E29AB9C870082CD3A /* Fluid.cpp in Sources */,
 				67ACCC35290E75F200747A24 /* main.cpp in Sources */,
+				670DB31F29AB95960082CD3A /* vtk.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

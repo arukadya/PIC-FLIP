@@ -22,7 +22,7 @@
 #include <Eigen/Core>
 #include <Eigen/IterativeLinearSolvers>
 #include <iostream>
-#include "Array3d.h"
+#include "Array3d.hpp"
 #define Nx 16
 #define Ny 16
 #define Nz 16//グリッドの数

@@ -1,14 +1,11 @@
 //
-//  watersurface.h
+//  watersurface.cpp
 //  Mable
 //
-//  Created by 須之内俊樹 on 2023/01/19.
+//  Created by 須之内俊樹 on 2023/02/26.
 //
 
-#ifndef watersurface_h
-#define watersurface_h
-
-#include "particle.h"
+#include "watersurface.hpp"
 
 myArray3d cal_implicitFunction(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz){
     myArray3d implicit_function = myArray3d(nx,ny,nz,0);
@@ -60,12 +57,12 @@ std::vector<std::vector<double>> makeSurface_imp(std::vector<Particle> &particle
             }
         }
     }
+//    outputMesh.push_back({(0.5)*dx,(0.5)*dx,(0.5)*dx});
+//    outputMesh.push_back({(nx+0.5)*dx,(0.5)*dx,(0.5)*dx});
+//    outputMesh.push_back({(nx+0.5)*dx,(0.5)*dx,(nz+0.5)*dx});
+//    outputMesh.push_back({(0.5)*dx,(0.5)*dx,(nz+0.5)*dx});
     return outputMesh;
 }
-enum {
-    inWater = 0,
-    inAir = 1
-};
 double cal_volume(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz,double threshold,int cnt){
     myArray3d implicit_function = cal_implicitFunction(particles, map, radius, dx, nx, ny, nz);
     double sum = 0;
@@ -106,4 +103,3 @@ double cal_volume(std::vector<Particle> &particles,std::unordered_map<std::vecto
     }
     return sum;
 }
-#endif /* watersurface_h */
