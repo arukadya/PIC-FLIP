@@ -7,20 +7,10 @@
 
 #include "Flip.hpp"
 
-//PIC_FLIP::PIC_FLIP(double x,double t,double density,double r,double th,double ga):Fluid(x,t,density){
-//    radius = dx/2*3;
-//    mp = pow(radius,3)/3*4*3.14;
-//    gamma = 1;
-//    threshold = 1;
-//    division = {Nx,Ny,Nz};
-//    initParticles();
-//    radius = r;
-//    threshold = th;
-//    gamma = ga;
-//}
 void PIC_FLIP::execute(std::string foldername,std::string filename){
     int cnt = 0;
     for(unsigned int i=0;i<repeatCount;i++){
+//        std::cout << i << std::endl;
         if(timer == 2)TD.startTimer("execute");
         if(timer == 1)TD.startTimer("preprocess");
         preprocessingParticles();

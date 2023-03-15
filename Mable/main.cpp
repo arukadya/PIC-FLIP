@@ -4,6 +4,7 @@ int main(int argc, const char * argv[]) {
     double dx = 0.1;//セルの大きさ
     double dt = 0.01;//時間の刻み幅
     double rho = 1.0;
+    std::cout << "test" << std::endl;
     std::vector<double> rads = {dx*3/2,dx};
     std::vector<double> thrs = {0.9};
     std::vector<double> gams = {1.0,1.5,2.0};
