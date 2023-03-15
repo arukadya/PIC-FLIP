@@ -44,6 +44,7 @@
 		670DB32D29AB9C870082CD3A /* Fluid.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Fluid.hpp; sourceTree = "<group>"; };
 		670DB32F29AB9D730082CD3A /* Flip.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Flip.cpp; sourceTree = "<group>"; };
 		670DB33029AB9D730082CD3A /* Flip.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Flip.hpp; sourceTree = "<group>"; };
+		672704ED29C19D6400917E77 /* marching_cubes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = marching_cubes.hpp; path = ../../../library/MyLib/marching_cubes.hpp; sourceTree = "<group>"; };
 		67ACCC31290E75F200747A24 /* Mable */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Mable; sourceTree = BUILT_PRODUCTS_DIR; };
 		67ACCC34290E75F200747A24 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		67C35CBD294E06B5006B57ED /* Hasher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Hasher.h; sourceTree = "<group>"; };
@@ -102,6 +103,7 @@
 				670DB32629AB98230082CD3A /* functions.cpp */,
 				670DB32729AB98230082CD3A /* functions.hpp */,
 				67C35CBD294E06B5006B57ED /* Hasher.h */,
+				672704ED29C19D6400917E77 /* marching_cubes.hpp */,
 			);
 			path = Mable;
 			sourceTree = "<group>";
