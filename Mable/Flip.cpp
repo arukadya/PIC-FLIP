@@ -13,6 +13,7 @@ void PIC_FLIP::execute(std::string foldername,std::string filename){
 //        std::cout << i << std::endl;
         if(timer == 2)TD.startTimer("execute");
         if(timer == 1)TD.startTimer("preprocess");
+        
         preprocessingParticles();
         if(timer == 1)TD.endTimer();
         particlesVelocityToGrid();
@@ -27,19 +28,20 @@ void PIC_FLIP::execute(std::string foldername,std::string filename){
                 TD.endTimer();
                 TD.startTimer("output");
             }
-            //std::cout << "mapsize = " << map.size() << std::endl;
             output(vertices);
-            //surfaceMesh = makeSurface(particles, map, radius, dx, Nx, Ny, Nz, threshold,th_d);
             implicit_function = cal_implicitFunction(particles, map, radius, dx, Nx, Ny, Nz);
+            std::vector<double>data = implicit_function.convert2Vector();
+            ImplicitFunction<double> imp = ImplicitFunction<double>(Nx*Ny*Nz, Nx, Ny, Nz, dx, dx, dx, data);
             std::string OutputVTK_imp = foldername + "/output" + "/output"+std::to_string(cnt)+".vtk";
-            std::string OutputVTK_iso = foldername + "/isosurface"+ "/output"+std::to_string(cnt)+".vtk";
-            outputVTK(OutputVTK_iso.c_str(),implicit_function,dx,Nx,Ny,Nz);
-            outputVTK_implicit(OutputVTK_imp.c_str(),implicit_function,dx,threshold);
-            //std::ostringstream ssSurface;
-            //ssSurface << "outputSurface/output" << std::setw(3) << std::setfill('0') << cnt << ".xyz";
-            //std::string OutputSurface(ssSurface.str());
-            //outputSurface(OutputSurface.c_str(),surfaceMesh);
+            std::string OutputVTK_iso = foldername + "/isosurface"+ "/output"+std::to_string(cnt)+".off";
+            outputVTK(OutputVTK_imp.c_str(),implicit_function,dx,Nx,Ny,Nz);
+            marchingVertices.clear();
+            marchingFaces.clear();
+            marching_cubes(marchingVertices, marchingFaces, origin, dist, imp, threshold);
+            outputOFF(OutputVTK_iso.c_str(), marchingVertices, marchingFaces);
+            
             volumes.push_back(cal_volume(particles, map, radius, dx, Nx, Ny, Nz, threshold,i));
+            
             cnt++;
             if(timer == 2)TD.endTimer();
         }

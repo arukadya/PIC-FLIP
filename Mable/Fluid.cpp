@@ -105,10 +105,10 @@ void Fluid::project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHa
             }
         }
     }
-    for(auto x:keys){
-        if(px(x[0] + x[1]*Ny + x[2]*Nz*Nz) > 1.0e-4)std::cout << x[0] + x[1]*Ny + x[2]*Nz*Nz << "," << px(x[0] + x[1]*Ny + x[2]*Nz*Nz) <<std::endl;
+//    for(auto x:keys){
+//        if(px(x[0] + x[1]*Ny + x[2]*Nz*Nz) > 1.0e-4)std::cout << x[0] + x[1]*Ny + x[2]*Nz*Nz << "," << px(x[0] + x[1]*Ny + x[2]*Nz*Nz) <<std::endl;
         //else std::cout << "success:" << x[0] + x[1]*Ny + x[2]*Nz*Nz << std::endl;
-    }
+//   }
     
     for(int i=1; i<Nx;i++){
         for(int j=0;j<Ny;j++){

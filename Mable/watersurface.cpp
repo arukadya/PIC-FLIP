@@ -8,12 +8,12 @@
 #include "watersurface.hpp"
 
 myArray3d cal_implicitFunction(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz){
-    myArray3d implicit_function = myArray3d(nx,ny,nz,0);
-    for(int i=0;i<nx;i++){
+    myArray3d implicit_function = myArray3d(nz,ny,nx,0);
+    for(int i=0;i<nz;i++){
         for(int j=0;j<ny;j++){
-            for(int k=0;k<nz;k++){
-                Eigen::Vector3d gridPos = {(i+0.5)*dx,(j+0.5)*dx,(k+0.5)*dx};
-                std::vector<std::vector<int>>key_list = {{i-1,j,k},{i,j,k}};
+            for(int k=0;k<nx;k++){
+                Eigen::Vector3d gridPos = {(k+0.5)*dx,(j+0.5)*dx,(i+0.5)*dx};
+                std::vector<std::vector<int>>key_list = {{k-1,j,i},{k,j,i}};
                 double func_val = 0;
                 for(int l=0;l<key_list.size();l++){
                     if(map.find(key_list[l]) != map.end()){
@@ -64,7 +64,7 @@ std::vector<std::vector<double>> makeSurface_imp(std::vector<Particle> &particle
     return outputMesh;
 }
 double cal_volume(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz,double threshold,int cnt){
-    myArray3d implicit_function = cal_implicitFunction(particles, map, radius, dx, nx, ny, nz);
+    myArray3d implicit_function = cal_implicitFunction(particles, map, radius, dx, nz, ny, nx);
     double sum = 0;
     for(int i=0;i<nx;i++){
         for(int k=0;k<nz;k++){

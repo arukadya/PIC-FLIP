@@ -17,7 +17,10 @@
 #include "functions.hpp"
 #include "particle.hpp"
 #include "watersurface.hpp"
-#define repeatCount 2000
+#include "marching_cubes.hpp"
+#include "ioOFF.hpp"
+
+#define repeatCount 1000
 #define alpha 1
 #ifndef Flip_h
 #define Flip_h
@@ -33,6 +36,10 @@ struct PIC_FLIP : Fluid{
     myArray3d implicit_function = myArray3d(Nx,Ny,Nz,0);
     std::vector<std::vector<double>> surfaceMesh;
     std::vector<double>volumes;
+    std::vector<Eigen::Vector3d> marchingVertices;
+    std::vector<std::vector<int>> marchingFaces;
+    Eigen::Vector3d origin;
+    Eigen::Vector3d dist;
     TimeDisplayer TD;
     double radius;
     double mp;
@@ -48,6 +55,8 @@ struct PIC_FLIP : Fluid{
         radius = r;
         threshold = th;
         gamma = ga;
+        origin = {0,0,0};
+        dist = {dx,dx,dx};
     };
     void execute(std::string foldername,std::string filename);
     void output(std::vector<Eigen::Vector3d> &v);
