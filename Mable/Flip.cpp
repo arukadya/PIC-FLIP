@@ -10,7 +10,6 @@
 void PIC_FLIP::execute(std::string foldername,std::string filename){
     int cnt = 0;
     for(unsigned int i=0;i<repeatCount;i++){
-//        std::cout << i << std::endl;
         if(timer == 2)TD.startTimer("execute");
         if(timer == 1)TD.startTimer("preprocess");
         
@@ -35,8 +34,6 @@ void PIC_FLIP::execute(std::string foldername,std::string filename){
             std::string OutputVTK_imp = foldername + "/output" + "/output"+std::to_string(cnt)+".vtk";
             std::string OutputVTK_iso = foldername + "/isosurface"+ "/output"+std::to_string(cnt)+".off";
             outputVTK(OutputVTK_imp.c_str(),implicit_function,dx,Nx,Ny,Nz);
-            marchingVertices.clear();
-            marchingFaces.clear();
             marching_cubes(marchingVertices, marchingFaces, origin, dist, imp, threshold);
             outputOFF(OutputVTK_iso.c_str(), marchingVertices, marchingFaces);
             

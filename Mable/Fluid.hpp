@@ -24,9 +24,9 @@
 #include <iostream>
 #include "Array3d.hpp"
 #include "Hasher.h"
-#define Nx 16
-#define Ny 8
-#define Nz 4//グリッドの数
+#define Nx 32
+#define Ny 32
+#define Nz 32//グリッドの数
 #define g0 9.8
 using ScalarType = double;
 using IndexType = int64_t;

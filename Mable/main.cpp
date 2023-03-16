@@ -10,23 +10,6 @@
 #include "ioOFF.hpp"
 namespace fs = std::filesystem;
 int main(int argc, const char * argv[]) {
-    std::vector<int>nums;
-    Eigen::Vector3d dists;
-    std::vector<double> v;
-    Eigen::Vector3d origin;
-    int num_cells;
-    std::string InputFlieName = "SDF_armadillo.vtk";
-    std::string OutputFlieName = "allmagilo.off";
-    
-    inputVTK(num_cells,nums,dists,origin,v,InputFlieName);
-    ImplicitFunction<double> imp = ImplicitFunction<double>(num_cells,nums[0],nums[1],nums[2],dists[0],dists[1],dists[2],v);
-    
-    std::vector<Eigen::Vector3d> vertices;
-    std::vector<std::vector<int>> faces;
-    marching_cubes(vertices, faces, origin, dists, imp, 0.5);
-    outputOFF(OutputFlieName.c_str(), vertices, faces);
-
-    
     double dx = 0.1;//セルの大きさ
     double dt = 0.01;//時間の刻み幅
     double rho = 1.0;

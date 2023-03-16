@@ -395,7 +395,8 @@ std::pair<int,int> edge2Vertex(int edgeID){
 
 
 void marching_cubes(std::vector<Eigen::Vector3d> &Vertices,std::vector<std::vector<int>> &Faces,Eigen::Vector3d origin,Eigen::Vector3d &dist,ImplicitFunction<double> &imp,double threshold){
-    //std::set<worldEdge> used_edge;
+    Vertices.clear();
+    Faces.clear();
     std::unordered_map<std::vector<int>, int, ArrayHasher<2>> map;
     int vert_cnt = 0;
     for(int i=0;i<imp.nx-1;++i){
