@@ -6,6 +6,9 @@
 //
 
 #include "Fluid.hpp"
+Fluid::Fluid(){
+    
+}
 Fluid::Fluid(double x,double t,double density){
     dx = x;
     dt = t;
@@ -13,25 +16,27 @@ Fluid::Fluid(double x,double t,double density){
     L = dx*Nx;
     vfi.reset(f0.y());
 }
-std::vector<int>Fluid::DirichletBoundaryCondition(int i,int j,int k,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
+
+std::vector<int>Fluid::DirichletBoundaryCondition(int i,int j,int k,myMap &map){
     std::vector<int>ret(6,1);
+    std::vector<std::vector<int>>keys = {{i+1,j,k},{i,j+1,k},{i-1,j,k},{i,j-1,k},{i,j,k-1},{i,j,k+1}};
     if(i == Nx-1)ret[0] = 0;
-    else if(map.find({i+1,j,k}) == map.end())ret[0] = 0;
+    else if(!map.contains(keys[0]))ret[0] = 0;
     if(j == Ny-1)ret[1] = 0;
-    else if(map.find({i,j+1,k}) == map.end())ret[1] = 0;
+    else if(!map.contains(keys[1]))ret[1] = 0;
 
     if(i == 0)ret[2] = 0;
-    else if(map.find({i-1,j,k}) == map.end())ret[2] = 0;
+    else if(!map.contains(keys[2]))ret[2] = 0;
     if(j == 0)ret[3] = 0;
-    else if(map.find({i,j-1,k}) == map.end())ret[3] = 0;
+    else if(!map.contains(keys[3]))ret[3] = 0;
 
     if(k == 0)ret[4] = 0;
-    else if(map.find({i,j,k-1}) == map.end())ret[4] = 0;
+    else if(!map.contains(keys[4]))ret[4] = 0;
     if(k == Nz-1)ret[5] = 0;
-    else if(map.find({i,j,k+1}) == map.end())ret[5] = 0;
+    else if(!map.contains(keys[5]))ret[5] = 0;
     return ret;
 }
-void Fluid::project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
+void Fluid::project(myMap &map){
     SparseMatrix A(Nx*Ny*Nz,Nx*Ny*Nz),B(Nx*Ny*Nz,Nx*Ny*Nz);
     Eigen::VectorXd b = Eigen::VectorXd::Zero(Nx*Ny*Nz);
     Eigen::VectorXd px;
@@ -43,7 +48,7 @@ void Fluid::project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHa
         for(int j=0;j<Ny;j++){
             for(int k=0;k<Nz;k++){
                 std::vector<int>key = {i,j,k};
-                if(map.find(key) == map.end()){
+                if(!map.contains(key)){
                     //前処理でAが変更されてしまうので，境界条件として別で無理矢理設定する．
                     triplets.emplace_back(i+j*Nx+k*Nx*Ny,i+j*Nx+k*Nx*Ny,1);
                     keys.push_back(key);
@@ -85,13 +90,13 @@ void Fluid::project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHa
     }
     A.setFromTriplets(triplets.begin(), triplets.end());
     Eigen::ConjugateGradient<SparseMatrix> solver;
-    
     //Eigen::BiCGSTAB<SparseMatrix> solver;
     
     for(int i=0;i<A.outerSize();++i){
         for(SparseMatrix::InnerIterator it(A,i);it;++it){
             if(it.row() == *DirichletKey.begin()){
                 it.valueRef() = 1;
+                //std::cout << "DirichletKey.size()=" << DirichletKey.size() << std::endl;
                 DirichletKey.erase(DirichletKey.begin());
             }
         }

@@ -6,7 +6,37 @@
 //
 
 #include "Flip.hpp"
-
+void PIC_FLIP::setParamators(double x,double t,double density,double r,double th,double ga){
+    mp = pow(radius,3)/3*4*3.14;
+    gamma = 1;
+    threshold = 1;
+    division = {Nx,Ny,Nz};
+    initParticles();
+    radius = r;
+    threshold = th;
+    gamma = ga;
+    origin = {0,0,0};
+    dist = {dx,dx,dx};
+}
+void PIC_FLIP::onecycle(){
+    TD.startTimer("execute");
+    preprocessingParticles();
+    std::cout << "preprocessingParticles" << std::endl;
+    particlesVelocityToGrid();
+    std::cout << "particlesVelocityToGrid" << std::endl;
+    calGridPressure();
+    std::cout << "calGridPressure" << std::endl;
+    gridVelocityToParticles();
+    std::cout << "gridVelocityToParticles" << std::endl;
+    advectParticles();
+    std::cout << "advectParticles" << std::endl;
+    output(vertices);
+    implicit_function = cal_implicitFunction(particles, map, radius, dx, Nx, Ny, Nz);
+    std::vector<double>data = implicit_function.convert2Vector();
+    ImplicitFunction<double> imp = ImplicitFunction<double>(Nx*Ny*Nz, Nx, Ny, Nz, dx, dx, dx, data);
+    marching_cubes(marchingVertices, marchingFaces, origin, dist, imp, threshold);
+    TD.endTimer();
+}
 void PIC_FLIP::execute(std::string foldername,std::string filename){
     int cnt = 0;
     for(unsigned int i=0;i<repeatCount;i++){
@@ -81,21 +111,18 @@ void PIC_FLIP::initParticles(){
     }
 }
 
-void PIC_FLIP::locateParticlesOnGrid(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map){
-    std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>m;
+void PIC_FLIP::locateParticlesOnGrid(myMap &map){
+    myMap m = myMap(map.nx,map.ny,map.nz);
     for(int i=0;i<particles.size();i++){
+        //std::cout << "(" <<particles[i].position.x() << "," << particles[i].position.y() << "," << particles[i].position.z() << ")" << std::endl;
         std::vector<int>key = calGridOrKey(particles[i].position);
-        if(m.find(key) == m.end()){
-            std::vector<int>contain = {i};
-            m.emplace(key,contain);
-        }
-        else{
-            m.at(key).push_back(i);
-        }
+        //std::cout << key[0] << "," << key[1] << "," << key[2] << std::endl;
+        m.push_back_particles(key, i);
+        //map.value[key[0]][key[1]][key[2]].push_back(i);
         particles[i].setGridIndex(key[0], key[1], key[2]);
     }
-    map=m;
-    //std::cout << "end locating" << std::endl;
+    map = m;
+    //map.print();
 }
 Eigen::Vector3d PIC_FLIP::calCellSize(){
     return Eigen::Vector3d{dx,dx,dx};
@@ -144,7 +171,8 @@ void PIC_FLIP::particlesVelocityToGrid(){
         }
     }
     //u
-    for(int i=1;i<Nx+1;i++){
+//    for(int i=1;i<Nx+1;i++){
+    for(int i=1;i<Nx;i++){
         for(int j=0;j<Ny;j++){
             for(int k=0;k<Nz;k++){
                 std::vector<Eigen::Vector3d>gx_list = {{(i-1)*dx,(j+0.5)*dx,(k+0.5)*dx},{(i)*dx,(j+0.5)*dx,(k+0.5)*dx}};
@@ -162,9 +190,10 @@ void PIC_FLIP::particlesVelocityToGrid(){
                 }
                 
                 for(int l=0;l<gx_list.size();l++){
-                    if(map.find(key_list[l]) != map.end()){
+                    if(map.contains(key_list[l])){
                         flg = true;
-                        auto val = map.at(key_list[l]);
+                        //std::cout << key_list[l][0] << "," << key_list[l][1] << "," << key_list[l][2] << ",i=" << i << std::endl;
+                        std::vector<int> val = map.at(key_list[l]);
                         for(auto x:val){
                             Eigen::Vector3d px = particles[x].position;
                             Eigen::Vector3d pv = particles[x].velocity;
@@ -184,7 +213,8 @@ void PIC_FLIP::particlesVelocityToGrid(){
     }
     //v
     for(int i=0;i<Nx;i++){
-        for(int j=1;j<Ny+1;j++){
+//        for(int j=1;j<Ny+1;j++){
+        for(int j=1;j<Ny;j++){
             for(int k=0;k<Nz;k++){
                 std::vector<Eigen::Vector3d>gx_list = {{(i+0.5)*dx,(j-1)*dx,(k+0.5)*dx},{(i+0.5)*dx,(j)*dx,(k+0.5)*dx}};
                 std::vector<std::vector<int>>key_list = {{i,j-1,k},{i,j,k}};
@@ -200,7 +230,7 @@ void PIC_FLIP::particlesVelocityToGrid(){
                     }
                 }
                 for(int l=0;l<gx_list.size();l++){
-                    if(map.find(key_list[l]) != map.end()){
+                    if(map.contains(key_list[l])){
                         flg = true;
                         auto val = map.at(key_list[l]);
                         for(auto x:val){
@@ -222,7 +252,8 @@ void PIC_FLIP::particlesVelocityToGrid(){
     }
     for(int i=0;i<Nx;i++){
         for(int j=0;j<Ny;j++){
-            for(int k=1;k<Nz+1;k++){
+//            for(int k=1;k<Nz+1;k++){
+            for(int k=1;k<Nz;k++){
                 std::vector<Eigen::Vector3d>gx_list = {{(i+0.5)*dx,(j+0.5)*dx,(k-1)*dx},{(i+0.5)*dx,(j+0.5)*dx,(k)*dx}};
                 std::vector<std::vector<int>>key_list = {{i,j,k-1},{i,j,k}};
                 bool flg = false;
@@ -237,7 +268,7 @@ void PIC_FLIP::particlesVelocityToGrid(){
                     }
                 }
                 for(int l=0;l<gx_list.size();l++){
-                    if(map.find(key_list[l]) != map.end()){
+                    if(map.contains(key_list[l])){
                         flg = true;
                         auto val = map.at(key_list[l]);
                         for(auto x:val){
@@ -266,7 +297,7 @@ void PIC_FLIP::calGridPressure(){
         for(int j=0;j<Ny;j++){
             for(int k=0;k<Nz;k++){
                 std::vector<int>key = {i,j,k};
-                if(map.find(key) == map.end()){
+                if(!map.contains(key)){
                     p.value[i][j][k] = 0;
                 }
             }
@@ -297,7 +328,7 @@ void PIC_FLIP::gridVelocityToParticles(){
                     }
                 }
                 for(int l=0;l<gx_list.size();l++){
-                    if(map.find(key_list[l]) != map.end()){
+                    if(map.contains(key_list[l])){
                         auto val = map.at(key_list[l]);
                         for(auto x:val){
                             Eigen::Vector3d px = particles[x].position;
@@ -332,7 +363,7 @@ void PIC_FLIP::gridVelocityToParticles(){
                     }
                 }
                 for(int l=0;l<gx_list.size();l++){
-                    if(map.find(key_list[l]) != map.end()){
+                    if(map.contains(key_list[l])){
                         auto val = map.at(key_list[l]);
                         for(auto x:val){
                             Eigen::Vector3d px = particles[x].position;
@@ -367,7 +398,7 @@ void PIC_FLIP::gridVelocityToParticles(){
                     }
                 }
                 for(int l=0;l<gx_list.size();l++){
-                    if(map.find(key_list[l]) != map.end()){
+                    if(map.contains(key_list[l])){
                         auto val = map.at(key_list[l]);
                         for(auto x:val){
                             Eigen::Vector3d px = particles[x].position;
@@ -429,7 +460,7 @@ void PIC_FLIP::preprocessingParticles(){
             particles[i].fixVector += fixDensityVector(particles[j].position, particles[i].position, radius, gamma, dt);
         }
         for(int k=0;k<keys.size();k++){
-            if(F[k] && map.find(keys[k]) != map.end()){
+            if(F[k] && map.contains(keys[k])){
                 auto val = map.at(keys[k]);
                 //particles[i].fixVector = {0,0};
                 for(auto &j:val){
@@ -471,7 +502,7 @@ void PIC_FLIP::preprocessingParticles(){
             //flg = true;
         }
         for(int k=0;k<keys.size();k++){
-            if(F[k] && map.find(keys[k]) != map.end()){
+            if(F[k] && map.contains(keys[k])){
                 auto val = map.at(keys[k]);
                 for(auto &j:val){
                     if(j == i)continue;

@@ -23,15 +23,15 @@
 #include <unordered_map>
 #include "Hasher.h"
 #include "functions.hpp"
-myArray3d cal_implicitFunction(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz);
+myArray3d cal_implicitFunction(std::vector<Particle> &particles,myMap &map,double radius,double dx,int nx,int ny,int nz);
 
-std::vector<std::vector<double>> makeSurface(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz,double threshold,double th_d);
+std::vector<std::vector<double>> makeSurface(std::vector<Particle> &particles,myMap &map,double radius,double dx,int nx,int ny,int nz,double threshold,double th_d);
 
-std::vector<std::vector<double>> makeSurface_imp(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz);
+std::vector<std::vector<double>> makeSurface_imp(std::vector<Particle> &particles,myMap &map,double radius,double dx,int nx,int ny,int nz);
 
 enum{
     inWater = 0,
     inAir = 1
 };
-double cal_volume(std::vector<Particle> &particles,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map,double radius,double dx,int nx,int ny,int nz,double threshold,int cnt);
+double cal_volume(std::vector<Particle> &particles,myMap &map,double radius,double dx,int nx,int ny,int nz,double threshold,int cnt);
 #endif /* watersurface_hpp */

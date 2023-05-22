@@ -30,4 +30,17 @@ struct myArray3d{
     void print();
     std::vector<double> convert2Vector();
 };
+struct myMap{
+    std::vector<std::vector<std::vector<std::vector<int>>>>value;
+    int nx,ny,nz;
+    //std::vector<std::vector<std::vector<int>>>size;
+    myMap();
+    myMap(int size_x,int size_y,int size_z);
+    void reset();
+    void print();
+    bool contains(std::vector<int> &key);
+    std::vector<int> at(std::vector<int> &key);
+    void push_back_particles(std::vector<int> &key,int i);
+    std::vector<double> convert2Vector();
+};
 #endif /* Array3d_hpp */

@@ -31,7 +31,8 @@ struct Fluid;
 struct PIC_FLIP : Fluid{
     std::vector<int> division;//division[0] = xの分割数.division[1]=y...
     std::vector<Particle>particles;//入力メッシュの頂点
-    std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>map;//ハッシュテーブル
+    //std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>map;//ハッシュテーブル
+    myMap map;
     std::vector<Eigen::Vector3d> vertices;//出力メッシュの頂点
     myArray3d implicit_function = myArray3d(Nx,Ny,Nz,0);
     std::vector<std::vector<double>> surfaceMesh;
@@ -45,12 +46,15 @@ struct PIC_FLIP : Fluid{
     double mp;
     double gamma;
     double threshold;
+    PIC_FLIP():Fluid(){
+    }
     PIC_FLIP(double x,double t,double density,double r,double th,double ga):Fluid(x,t,density){
         radius = dx/2*3;
         mp = pow(radius,3)/3*4*3.14;
         gamma = 1;
         threshold = 1;
         division = {Nx,Ny,Nz};
+        map = myMap(Nx+1,Ny+1,Nz+1);
         initParticles();
         radius = r;
         threshold = th;
@@ -58,10 +62,12 @@ struct PIC_FLIP : Fluid{
         origin = {0,0,0};
         dist = {dx,dx,dx};
     };
+    void setParamators(double x,double t,double density,double r,double th,double ga);
+    void onecycle();
     void execute(std::string foldername,std::string filename);
     void output(std::vector<Eigen::Vector3d> &v);
     void initParticles();
-    void locateParticlesOnGrid(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map);
+    void locateParticlesOnGrid(myMap &map);
     Eigen::Vector3d calCellSize();
     std::vector<int> calGridOrKey(Eigen::Vector3d v);
     void particlesVelocityToGrid();
@@ -73,3 +79,4 @@ struct PIC_FLIP : Fluid{
 #endif /* Flip_h */
 
 #endif /* Flip_hpp */
+

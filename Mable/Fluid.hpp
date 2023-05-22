@@ -24,9 +24,9 @@
 #include <iostream>
 #include "Array3d.hpp"
 #include "Hasher.h"
-#define Nx 32
-#define Ny 32
-#define Nz 32//グリッドの数
+#define Nx 16
+#define Ny 16
+#define Nz 16//グリッドの数
 #define g0 9.8
 using ScalarType = double;
 using IndexType = int64_t;
@@ -56,8 +56,9 @@ struct Fluid{
     std::vector<double> weights;//粒子の重み
     double L;
     Eigen::Vector3d f0 = {0.0,-g0,0.0};
+    Fluid();
     Fluid(double x,double t,double density);
-    std::vector<int>DirichletBoundaryCondition(int i,int j,int k,std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map);
-    void project(std::unordered_map<std::vector<int>,std::vector<int>,ArrayHasher<3>>&map);
+    std::vector<int>DirichletBoundaryCondition(int i,int j,int k,myMap &map);
+    void project(myMap &map);
 };
 #endif /* Fluid_hpp */
